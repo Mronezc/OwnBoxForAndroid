@@ -151,9 +151,9 @@ internal fun buildLoadBalanceOutbound(
         url = testUrl?.takeIf { it.isNotBlank() }
             ?: runCatching { DataStore.connectionTestURL }.getOrNull()?.takeIf { it.isNotBlank() }
             ?: "https://cp.cloudflare.com/generate_204"
-        val iv = (intervalSec?.takeIf { it > 0 } ?: 300L).coerceAtLeast(10L)
+        val iv = (intervalSec?.takeIf { it > 0 } ?: runCatching { DataStore.globalUrlTestInterval.toLong() }.getOrDefault(60L)).coerceAtLeast(10L)
         interval = "${iv}s"
-        tolerance = toleranceMs?.takeIf { it >= 0 } ?: 50
+        tolerance = toleranceMs?.takeIf { it >= 0 } ?: runCatching { DataStore.globalUrlTestTolerance }.getOrDefault(50)
         idle_timeout = idleTimeoutStr?.takeIf { it.isNotBlank() } ?: "${iv}s"
         interrupt_exist_connections = interruptExist ?: false
     }
@@ -174,11 +174,9 @@ internal fun buildUrlTestOutbound(
         url = testUrl?.takeIf { it.isNotBlank() }
             ?: runCatching { DataStore.connectionTestURL }.getOrNull()?.takeIf { it.isNotBlank() }
             ?: "https://cp.cloudflare.com/generate_204"
-        val iv = (intervalSec?.takeIf { it > 0 } ?: 300L).coerceAtLeast(10L)
+        val iv = (intervalSec?.takeIf { it > 0 } ?: runCatching { DataStore.globalUrlTestInterval.toLong() }.getOrDefault(60L)).coerceAtLeast(10L)
         interval = "${iv}s"
-        // 50ms tolerance: prevents micro-jitter (< 50ms delta) from triggering node switch.
-        // This is independent of the memory profile toggle — always active for leastPing stability.
-        tolerance = toleranceMs?.takeIf { it >= 0 } ?: 50
+        tolerance = toleranceMs?.takeIf { it >= 0 } ?: runCatching { DataStore.globalUrlTestTolerance }.getOrDefault(50)
         // Enforce minimum 10-minute idle_timeout regardless of memory mode.
         // This guarantees Telegram file uploads (which can take many minutes) are never
         // interrupted by the kernel reclaiming an "idle" leastPing connection pool.
@@ -753,12 +751,9 @@ fun buildConfig(
                     TunImplementation.SING_TUN -> null // 官方最新自研原生 Go 栈（推荐，默认最高性能）
                     else -> null
                 }
-                // 移动蜂窝网络（4G/5G）与 PPPoE 环境下，外层代理协议（TLS/AEAD/Shadowsocks/Hysteria）
-                // 封装包头开销在 60~100 字节。若 TUN MTU 为 1400，外层大包极易超过运营商 GTP 隧道 MTU（1420-1440），
-                // 引发运营商丢包且屏蔽 ICMP PMTUD 回包（PMTUD 黑洞），导致图片/视频上传降速或断流。
-                // 钳制 TUN MTU 至 1360（WireGuard/Tailscale 标准），Go netstack 会自动把 TCP MSS 钳制至 1320 字节，
-                // 确保外层封装包永不超过物理链路 MTU，彻底解决上传不稳定与大包断流。
-                mtu = (DataStore.mtu).coerceAtMost(1360)
+                // MTU 完全由用户在设置中自主配置（默认 1360），底层与 VpnService 保持 100% 严格一致，
+                // 杜绝双端 MTU 脱节引发的 PMTUD 丢包黑洞，保障大文件、图片与视频上传稳定满速。
+                mtu = DataStore.mtu
                 auto_route = true
                 strict_route = DataStore.strictRoute
                 udp_timeout = 300L
@@ -1800,10 +1795,28 @@ fun buildConfig(
                 action = "hijack-dns"
             })
 
+            // 1.5. Telegram 官方数据中心（DC 1~5）纯 IP 直连通道（跳过嗅探，直达主代理出站，杜绝 300ms 首包死等与 MTProto 读超时断流）
+            val telegramDcIps = listOf(
+                "91.108.4.0/22",
+                "91.108.8.0/22",
+                "91.108.12.0/22",
+                "91.108.16.0/22",
+                "91.108.56.0/22",
+                "149.154.160.0/20"
+            )
+            topRouteRules.add(Rule_DefaultOptions().apply {
+                ip_cidr = telegramDcIps
+                outbound = mainProxyTag
+            })
+
             // 2. sing-box 1.13：sniff（嗅探域名以供后续分流规则匹配）
+            // 显式指定 timeout = "100ms" 与 sniffer = ["tls", "http", "quic"]，
+            // 消除非 TLS 私有二进制流被内核默认阻塞 300ms 造成多路并发文件上传/下载卡死
             if (needSniff) {
                 topRouteRules.add(Rule_DefaultOptions().apply {
                     action = "sniff"
+                    timeout = "100ms"
+                    sniffer = listOf("tls", "http", "quic")
                 })
             }
 

@@ -4709,6 +4709,10 @@ public class SingBoxOptions {
         // sing-box 1.13 resolve 规则动作使用（RouteActionResolve.strategy）
         public String strategy;
 
+        // sing-box 1.13 sniff 规则动作使用（RouteActionSniff.timeout / sniffer）
+        public String timeout;
+        public List<String> sniffer;
+
     }
 
     public static class DNSRule_DefaultOptions extends DNSRule {

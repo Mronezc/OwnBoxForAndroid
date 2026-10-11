@@ -130,6 +130,8 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var concurrentDial by configurationStore.boolean(Key.CONCURRENT_DIAL)
     var dualNetworkAcceleration by configurationStore.boolean(Key.DUAL_NETWORK_ACCELERATION)
     var autoSelectLowestLatency by configurationStore.boolean(Key.AUTO_SELECT_LOWEST_LATENCY)
+    var globalUrlTestInterval by configurationStore.stringToInt("globalUrlTestInterval") { 60 }
+    var globalUrlTestTolerance by configurationStore.stringToInt("globalUrlTestTolerance") { 50 }
 
     var allowAccess by configurationStore.boolean(Key.ALLOW_ACCESS)
     var speedInterval by configurationStore.stringToInt(Key.SPEED_INTERVAL)
