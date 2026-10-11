@@ -45,6 +45,8 @@ type boxPlatformInterfaceWrapper struct {
 	isURLTest      bool
 }
 
+var _ adapter.PlatformInterface = (*boxPlatformInterfaceWrapper)(nil)
+
 func (w *boxPlatformInterfaceWrapper) urlTestTrace(stage string, format string, args ...any) {
 	if !w.isURLTest {
 		return
