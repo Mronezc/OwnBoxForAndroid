@@ -418,18 +418,6 @@
             app:title="@string/simple_download_url"
             app:useSimpleSummaryProvider="true" />
 
-        <EditTextPreference
-            app:defaultValue="60"
-            app:key="globalUrlTestInterval"
-            app:title="@string/urltest_interval"
-            app:useSimpleSummaryProvider="true" />
-
-        <EditTextPreference
-            app:defaultValue="50"
-            app:key="globalUrlTestTolerance"
-            app:title="@string/urltest_tolerance"
-            app:useSimpleSummaryProvider="true" />
-
     </moe.matsuri.nb4a.ui.ExpandablePreferenceCategory>
 
     <!-- 8. 进阶设置 -->

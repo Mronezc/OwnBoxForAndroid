@@ -151,9 +151,9 @@ internal fun buildLoadBalanceOutbound(
         url = testUrl?.takeIf { it.isNotBlank() }
             ?: runCatching { DataStore.connectionTestURL }.getOrNull()?.takeIf { it.isNotBlank() }
             ?: "https://cp.cloudflare.com/generate_204"
-        val iv = (intervalSec?.takeIf { it > 0 } ?: runCatching { DataStore.globalUrlTestInterval.toLong() }.getOrDefault(60L)).coerceAtLeast(10L)
+        val iv = (intervalSec?.takeIf { it > 0 } ?: 60L).coerceAtLeast(10L)
         interval = "${iv}s"
-        tolerance = toleranceMs?.takeIf { it >= 0 } ?: runCatching { DataStore.globalUrlTestTolerance }.getOrDefault(50)
+        tolerance = toleranceMs?.takeIf { it >= 0 } ?: 50
         idle_timeout = idleTimeoutStr?.takeIf { it.isNotBlank() } ?: "${iv}s"
         interrupt_exist_connections = interruptExist ?: false
     }
@@ -174,9 +174,9 @@ internal fun buildUrlTestOutbound(
         url = testUrl?.takeIf { it.isNotBlank() }
             ?: runCatching { DataStore.connectionTestURL }.getOrNull()?.takeIf { it.isNotBlank() }
             ?: "https://cp.cloudflare.com/generate_204"
-        val iv = (intervalSec?.takeIf { it > 0 } ?: runCatching { DataStore.globalUrlTestInterval.toLong() }.getOrDefault(60L)).coerceAtLeast(10L)
+        val iv = (intervalSec?.takeIf { it > 0 } ?: 60L).coerceAtLeast(10L)
         interval = "${iv}s"
-        tolerance = toleranceMs?.takeIf { it >= 0 } ?: runCatching { DataStore.globalUrlTestTolerance }.getOrDefault(50)
+        tolerance = toleranceMs?.takeIf { it >= 0 } ?: 50
         // Enforce minimum 10-minute idle_timeout regardless of memory mode.
         // This guarantees Telegram file uploads (which can take many minutes) are never
         // interrupted by the kernel reclaiming an "idle" leastPing connection pool.
