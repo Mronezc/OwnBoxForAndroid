@@ -212,6 +212,7 @@ type LoadBalance struct {
 	access                       sync.Mutex
 	stickyMu                     sync.RWMutex
 	stickySessions               map[string]stickyEntry
+	lastSelectedIdx              atomic.Int32
 }
 
 func NewLoadBalance(ctx context.Context, router adapter.Router, logger log.ContextLogger, tag string, options LoadBalanceOptions) (adapter.Outbound, error) {
@@ -246,6 +247,7 @@ func NewLoadBalance(ctx context.Context, router adapter.Router, logger log.Conte
 		stickySessions:               make(map[string]stickyEntry),
 		close:                        make(chan struct{}),
 	}
+	lb.lastSelectedIdx.Store(-1)
 	if len(lb.tags) == 0 {
 		return nil, E.New("missing tags")
 	}
@@ -649,47 +651,33 @@ func (s *LoadBalance) candidateIndices(ctx context.Context, dest M.Socksaddr) []
 			healthy = indices
 			degraded = nil
 		}
+		latencies := make([]int64, n)
+		for _, i := range indices {
+			var l int64
+			if s.history != nil {
+				if i < len(s.tags) {
+					if h := s.history.LoadURLTestHistory(s.tags[i]); h != nil && h.Delay > 0 {
+						l = int64(h.Delay)
+					}
+				}
+				if l <= 0 && i < len(s.outbounds) && s.outbounds[i] != nil {
+					if h := s.history.LoadURLTestHistory(s.outbounds[i].Tag()); h != nil && h.Delay > 0 {
+						l = int64(h.Delay)
+					}
+				}
+			}
+			if l <= 0 && i < len(s.stats) && s.stats[i] != nil {
+				l = s.stats[i].latencyEmaMs.Load()
+			}
+			if l <= 0 {
+				l = 9999
+			}
+			latencies[i] = l
+		}
+
 		slices.SortStableFunc(healthy, func(a, b int) int {
-			var la int64
-			if s.history != nil {
-				if a < len(s.tags) {
-					if h := s.history.LoadURLTestHistory(s.tags[a]); h != nil && h.Delay > 0 {
-						la = int64(h.Delay)
-					}
-				}
-				if la <= 0 && a < len(s.outbounds) && s.outbounds[a] != nil {
-					if h := s.history.LoadURLTestHistory(s.outbounds[a].Tag()); h != nil && h.Delay > 0 {
-						la = int64(h.Delay)
-					}
-				}
-			}
-			if la <= 0 && a < len(s.stats) && s.stats[a] != nil {
-				la = s.stats[a].latencyEmaMs.Load()
-			}
-			if la <= 0 {
-				la = 9999
-			}
-
-			var lb int64
-			if s.history != nil {
-				if b < len(s.tags) {
-					if h := s.history.LoadURLTestHistory(s.tags[b]); h != nil && h.Delay > 0 {
-						lb = int64(h.Delay)
-					}
-				}
-				if lb <= 0 && b < len(s.outbounds) && s.outbounds[b] != nil {
-					if h := s.history.LoadURLTestHistory(s.outbounds[b].Tag()); h != nil && h.Delay > 0 {
-						lb = int64(h.Delay)
-					}
-				}
-			}
-			if lb <= 0 && b < len(s.stats) && s.stats[b] != nil {
-				lb = s.stats[b].latencyEmaMs.Load()
-			}
-			if lb <= 0 {
-				lb = 9999
-			}
-
+			la := latencies[a]
+			lb := latencies[b]
 			if la < lb {
 				return -1
 			} else if la > lb {
@@ -697,6 +685,32 @@ func (s *LoadBalance) candidateIndices(ctx context.Context, dest M.Socksaddr) []
 			}
 			return 0
 		})
+
+		// 滞后容差（Hysteresis Tolerance）保护：
+		// 若当前活跃节点依然健康且有测速，仅在最优候选节点比当前活跃节点快超过 s.tolerance 时才允许切换到首位，
+		// 避免 1ms 微小抖动导致策略组频繁颠簸断流。
+		currentIdx := int(s.lastSelectedIdx.Load())
+		if currentIdx >= 0 && currentIdx < n && len(healthy) > 1 && s.tolerance > 0 {
+			bestIdx := healthy[0]
+			if bestIdx != currentIdx {
+				currentDelay := latencies[currentIdx]
+				bestDelay := latencies[bestIdx]
+				if currentDelay < 9999 && currentDelay <= bestDelay+int64(s.tolerance) {
+					// 优势未超出容差，保持当前活跃节点优先
+					for pos, idx := range healthy {
+						if idx == currentIdx {
+							copy(healthy[1:pos+1], healthy[0:pos])
+							healthy[0] = currentIdx
+							break
+						}
+					}
+				}
+			}
+		}
+
+		if len(healthy) > 0 {
+			s.lastSelectedIdx.Store(int32(healthy[0]))
+		}
 		result = append(healthy, degraded...)
 
 	case "leastLoad", "least_load":

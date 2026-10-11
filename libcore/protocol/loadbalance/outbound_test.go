@@ -557,3 +557,41 @@ func TestLeastLoadConcurrentAccounting(t *testing.T) {
 		t.Fatalf("expected count to remain 0 after multiple closes, got %d", count.Load())
 	}
 }
+
+func TestLeastPingToleranceHysteresis(t *testing.T) {
+	n := 2
+	lb := &LoadBalance{
+		tags:      []string{"n0", "n1"},
+		stats:     make([]*nodeStats, n),
+		strategy:  "leastPing",
+		tolerance: 50,
+	}
+	for i := 0; i < n; i++ {
+		lb.stats[i] = new(nodeStats)
+	}
+	lb.lastSelectedIdx.Store(-1)
+	lb.outbounds = make([]adapter.Outbound, n)
+
+	// Step 1: n0 = 100ms, n1 = 120ms -> n0 selected
+	lb.stats[0].latencyEmaMs.Store(100)
+	lb.stats[1].latencyEmaMs.Store(120)
+	indices := lb.candidateIndices(nil, M.Socksaddr{})
+	if indices[0] != 0 {
+		t.Fatalf("expected initial index 0, got %d", indices[0])
+	}
+
+	// Step 2: n1 fluctuates to 95ms (only 5ms faster, within 50ms tolerance) -> n0 should remain at index 0
+	lb.stats[1].latencyEmaMs.Store(95)
+	indices = lb.candidateIndices(nil, M.Socksaddr{})
+	if indices[0] != 0 {
+		t.Fatalf("expected index 0 to be preserved within tolerance (delta=5ms <= 50ms), got %d", indices[0])
+	}
+
+	// Step 3: n1 drops to 40ms (60ms faster, exceeds 50ms tolerance) -> n1 should switch to index 0
+	lb.stats[1].latencyEmaMs.Store(40)
+	indices = lb.candidateIndices(nil, M.Socksaddr{})
+	if indices[0] != 1 {
+		t.Fatalf("expected switch to index 1 when exceeding tolerance (delta=60ms > 50ms), got %d", indices[0])
+	}
+}
+

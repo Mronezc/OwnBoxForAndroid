@@ -723,9 +723,6 @@ class MainActivity : ThemedActivity(),
     override fun onStop() {
         connection.updateConnectionId(SagerConnection.CONNECTION_ID_MAIN_ACTIVITY_BACKGROUND)
         super.onStop()
-        if (!DataStore.performancePriorityMode) {
-            Libcore.forceGc()
-        }
     }
 
     override fun onDestroy() {

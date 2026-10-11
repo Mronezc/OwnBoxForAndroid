@@ -53,6 +53,8 @@ class BaseService {
         var cacheRecoveryAttempts = 0
         var networkSwitchRetryAttempts = 0
 
+        var lastScreenOffTime = 0L
+
         val receiver = broadcastReceiver { ctx, intent ->
             when (intent.action) {
                 Intent.ACTION_SHUTDOWN -> service.persistStats()
@@ -72,9 +74,9 @@ class BaseService {
                             Libcore.forceGc()
                         } else {
                             proxy?.box?.wake()
-                            if (DataStore.wakeResetConnections) {
-                                Libcore.resetAllConnections(true)
-                            }
+                            // Exiting Doze mode: carrier/NAT mappings are guaranteed expired.
+                            // Passive instantaneous reset to avoid 15-30s TCP zombie socket timeouts.
+                            Libcore.resetAllConnections(true)
                         }
                     }
                 }
@@ -114,6 +116,8 @@ class BaseService {
                     // Pausing the core on screen off kills idle TCP keepalives and marks connections as dead,
                     // causing Telegram/WeChat to get stuck in "Connecting..." when switching apps or unlocking.
                     // Keep TUN/network completely alive without unnecessary GC thrashing.
+                    // Record timestamp for smart passive wake-up: 0 background overhead, 0 extra power drain.
+                    lastScreenOffTime = android.os.SystemClock.elapsedRealtime()
                 }
 
                 Intent.ACTION_SCREEN_ON,
@@ -123,7 +127,13 @@ class BaseService {
                     runOnDefaultDispatcher {
                         proxy?.looper?.postLastSnapshotSpeed()
                     }
-                    if (DataStore.wakeResetConnections) {
+                    val offDuration = if (lastScreenOffTime > 0L) {
+                        android.os.SystemClock.elapsedRealtime() - lastScreenOffTime
+                    } else 0L
+                    // 仅当息屏休眠超过 3 分钟（运营商 NAT 表老化失效导致僵尸连接）或用户显式配置时，
+                    // 在亮屏的瞬时单次执行轻量清理（耗时 < 1ms），实现 0 等待秒连；
+                    // 短息屏（< 3 分钟，如看时间）绝不打断现有连接，保护后台音乐、长上传与通话。
+                    if (offDuration > 180_000L || DataStore.wakeResetConnections) {
                         Libcore.resetAllConnections(true)
                     }
                 }
