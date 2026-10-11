@@ -1,6 +1,6 @@
 # OwnBox for Android 更新日志 (Changelog)
 
-# OwnBox for Android v3.1.1 预览版 (v3.1.1-preview)
+# OwnBox for Android v3.1.1 正式版
 
 * **MTU 完全归还用户自主控制权并双端严格对齐**
 * **策略组（LeastPing）实现容差（Tolerance）平滑防抖**
@@ -10,7 +10,7 @@
 * **恢复内核原生 TFO 行为**
 * **100% 坚守 3.0.9 原生界面**
 
-# OwnBox for Android v3.1.0 正式版
+# OwnBox for Android v3.1.0 预览版 (v3.1.0-preview)
 
 * **彻底突破全网上传 100 KB/s 瓶颈，释放 6 MB/s+ 满速物理上行能力**
 * **全面优化 Telegram 及通用网络传输速度与稳定性**
