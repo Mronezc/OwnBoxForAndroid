@@ -751,9 +751,11 @@ fun buildConfig(
                     TunImplementation.SING_TUN -> null // 官方最新自研原生 Go 栈（推荐，默认最高性能）
                     else -> null
                 }
-                // MTU 完全由用户在设置中自主配置（默认 1360），底层与 VpnService 保持 100% 严格一致，
-                // 杜绝双端 MTU 脱节引发的 PMTUD 丢包黑洞，保障大文件、图片与视频上传稳定满速。
-                mtu = DataStore.mtu
+                // MTU 双端与 VpnService 严格对齐锁定在黄金安全基准（<= 1360），
+                // 确保 TCP MSS 钳制在 1320 字节，外层封装后永不超过运营商基站 1420 限制，
+                // 杜绝 PMTUD 丢包黑洞，保障全网大文件与视频上传稳定满速。
+                val safeMtu = if (DataStore.mtu > 1360) 1360 else DataStore.mtu
+                mtu = safeMtu
                 auto_route = true
                 strict_route = DataStore.strictRoute
                 udp_timeout = 300L
@@ -1182,6 +1184,7 @@ fun buildConfig(
 
                     _hack_config_map["tag"] = tagOut
                     _hack_config_map["tcp_multi_path"] = false
+                    _hack_config_map["tcp_fast_open"] = false
 
                     _hack_custom_config = bean.customOutboundJson
                 }

@@ -144,10 +144,10 @@ class VpnService : BaseVpnService(),
 //        Logs.d(tunPlatformOptionsJson)
 //        val tunOptions = JSONObject(tunOptionsJson)
 
-        // address & route & MTU ...... use NB4A GUI config
+        val safeMtu = if (DataStore.mtu > 1360) 1360 else DataStore.mtu
         val builder = Builder().setConfigureIntent(SagerNet.configureIntent(this))
             .setSession(getString(R.string.app_name))
-            .setMtu(DataStore.mtu)
+            .setMtu(safeMtu)
         val ipv6Mode = DataStore.ipv6Mode
 
         // address: 当启用 IPv6 时才添加 IPv6 虚拟地址与路由；当禁用 IPv6 时绝不配置 IPv6 虚拟地址与路由，
