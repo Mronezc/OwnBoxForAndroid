@@ -1,5 +1,6 @@
 # OwnBox for Android v3.1.3 预览版
 
+* **修复打开设置界面时因 SummaryProvider 冲突导致的崩溃闪退**
 * **修复剪贴板导入 VLESS Reality 节点公钥丢失缺陷**
 * **修复节点编辑保存时 Reality 参数被重置问题**
 * **彻底统一底层 TUN 协议栈至 sing-box 官方最新原生 sing-tun**

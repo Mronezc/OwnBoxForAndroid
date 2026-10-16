@@ -229,6 +229,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat(), OnPreferenceDataS
 
         val tunImplementation = findPreference<SimpleMenuPreference>(Key.TUN_IMPLEMENTATION)
         tunImplementation?.apply {
+            summaryProvider = null
             value = io.nekohasekai.sagernet.TunImplementation.SING_TUN.toString()
             isEnabled = false
             summary = "Sing-Tun (官方最新原生协议栈)"
