@@ -152,7 +152,7 @@ public abstract class StandardV2RayBean extends AbstractBean {
 
     @Override
     public void serialize(ByteBufferOutput output) {
-        output.writeInt(11);
+        output.writeInt(12);
         super.serialize(output);
         output.writeString(uuid);
         output.writeString(encryption);
@@ -206,7 +206,7 @@ public abstract class StandardV2RayBean extends AbstractBean {
         }
 
         output.writeString(security);
-        if ("tls".equals(security)) {
+        if ("tls".equals(security) || "reality".equals(security)) {
             output.writeString(sni);
             output.writeString(alpn);
             output.writeString(certificates);
@@ -311,7 +311,8 @@ public abstract class StandardV2RayBean extends AbstractBean {
         }
 
         security = input.readString();
-        if ("tls".equals(security)) {
+        boolean shouldReadTls = "tls".equals(security) || (version >= 12 && "reality".equals(security));
+        if (shouldReadTls) {
             sni = input.readString();
             alpn = input.readString();
             certificates = input.readString();

@@ -863,7 +863,7 @@ fun buildSingBoxOutboundTLS(bean: StandardV2RayBean): OutboundTLSOptions? {
     if (bean !is TrojanBean && bean.security != "tls" && bean.security != "reality" && bean.realityPubKey.isBlank()) return null
     return OutboundTLSOptions().apply {
         enabled = true
-        insecure = bean.allowInsecure || DataStore.globalAllowInsecure
+        insecure = bean.allowInsecure || runCatching { DataStore.globalAllowInsecure }.getOrDefault(false)
         val trimmedSni = bean.sni?.trim()
         server_name = trimmedSni.takeIf { !it.isNullOrBlank() } ?: bean.serverAddress?.trim()
         if (bean.alpn.isNotBlank()) {
@@ -933,8 +933,10 @@ fun buildSingBoxOutboundStandardV2RayBean(bean: StandardV2RayBean): Outbound {
                 server = bean.serverAddress
                 server_port = bean.serverPort
                 uuid = bean.uuid
-                if (bean.encryption.isNotBlank() && bean.encryption != "auto") {
-                    flow = bean.encryption
+                if (bean.encryption.isNotBlank() && bean.encryption != "auto" && bean.encryption != "none") {
+                    if (bean.encryption.contains("xtls-rprx-vision")) {
+                        flow = "xtls-rprx-vision"
+                    }
                 }
                 when (bean.packetEncoding) {
                     0 -> packet_encoding = ""
@@ -972,7 +974,7 @@ fun buildSingBoxOutboundStandardV2RayBean(bean: StandardV2RayBean): Outbound {
                     if (server_name.isNullOrBlank()) {
                         server_name = bean.sni.takeIf { it.isNotBlank() } ?: bean.serverAddress
                     }
-                    insecure = bean.allowInsecure || DataStore.globalAllowInsecure
+                    insecure = bean.allowInsecure || runCatching { DataStore.globalAllowInsecure }.getOrDefault(false)
                 }
                 transport = buildSingBoxOutboundStreamSettings(bean)
             }

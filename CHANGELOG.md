@@ -1,5 +1,15 @@
 # OwnBox for Android 更新日志 (Changelog)
 
+# OwnBox for Android v3.1.3 预览版 (v3.1.3-preview)
+
+* **修复剪贴板导入 VLESS Reality 节点公钥丢失缺陷**
+* **修复节点编辑保存时 Reality 参数被重置问题**
+* **彻底统一底层 TUN 协议栈至 sing-box 官方最新原生 sing-tun**
+* **全面清理已弃用的遗留 stack 兼容分支与多余选项**
+* **完善历史配置与旧版备份导入自动平滑迁移机制**
+* **优化 VLESS 节点流控适配与延迟可用性探测状态**
+* **100% 坚守原生经典界面与操作体验**
+
 # OwnBox for Android v3.1.2 预览版 (v3.1.2-preview)
 
 * **升级官方最新内核 sing-box v1.15.0-alpha.12**

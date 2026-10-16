@@ -680,13 +680,7 @@ object ThroneDesktopBackupImporter {
             putIntStr(Key.IPV6_MODE, if (on) IPv6Mode.ENABLE else IPv6Mode.DISABLE)
         }
         s["vpn_impl"]?.let {
-            val impl = when (it.lowercase()) {
-                "system" -> TunImplementation.SYSTEM
-                "gvisor" -> TunImplementation.GVISOR
-                "mixed" -> TunImplementation.MIXED
-                else -> return@let
-            }
-            putIntStr(Key.TUN_IMPLEMENTATION, impl)
+            putIntStr(Key.TUN_IMPLEMENTATION, TunImplementation.SING_TUN)
         }
         // Tun mode on desktop ≈ VPN service mode; system proxy ≈ proxy mode
         // Official note: system proxy / tun switch may not be in backup; still map if present

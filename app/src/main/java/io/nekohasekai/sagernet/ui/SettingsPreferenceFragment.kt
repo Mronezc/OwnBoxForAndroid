@@ -227,7 +227,12 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat(), OnPreferenceDataS
             true
         }
 
-        val tunImplementation = findPreference<SimpleMenuPreference>(Key.TUN_IMPLEMENTATION)!!
+        val tunImplementation = findPreference<SimpleMenuPreference>(Key.TUN_IMPLEMENTATION)
+        tunImplementation?.apply {
+            value = io.nekohasekai.sagernet.TunImplementation.SING_TUN.toString()
+            isEnabled = false
+            summary = "Sing-Tun (官方最新原生协议栈)"
+        }
         val resolveDestination = findPreference<SwitchPreference>(Key.RESOLVE_DESTINATION)!!
         val acquireWakeLock = findPreference<SwitchPreference>(Key.ACQUIRE_WAKE_LOCK)!!
         val hideFromRecentApps = findPreference<SwitchPreference>(Key.HIDE_FROM_RECENT_APPS)!!
@@ -330,7 +335,7 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat(), OnPreferenceDataS
         ipv6Mode.onPreferenceChangeListener = reloadListener
 
         resolveDestination.onPreferenceChangeListener = reloadListener
-        tunImplementation.onPreferenceChangeListener = reloadListener
+        tunImplementation?.onPreferenceChangeListener = reloadListener
         acquireWakeLock.onPreferenceChangeListener = reloadListener
         val performancePriorityMode = findPreference<SwitchPreference>(Key.PERFORMANCE_PRIORITY_MODE)
         performancePriorityMode?.setOnPreferenceChangeListener { _, newValue ->
