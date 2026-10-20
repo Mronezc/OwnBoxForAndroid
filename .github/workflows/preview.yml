@@ -36,6 +36,19 @@ jobs:
       - name: Native Build
         if: steps.cache.outputs.cache-hit != 'true'
         run: ./run lib core
+      - name: Verify LibCore AAR
+        run: |
+          test -s app/libs/libcore.aar
+          unzip -p app/libs/libcore.aar classes.jar > /tmp/libcore-classes.jar
+          unzip -l /tmp/libcore-classes.jar | grep -q 'libcore/Libcore.class'
+          unzip -l /tmp/libcore-classes.jar | grep -q 'go/Seq.class'
+      - name: Upload LibCore AAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcore-aar
+          path: app/libs/libcore.aar
+          if-no-files-found: error
+          retention-days: 1
   build:
     name: Build OSS APK
     runs-on: ubuntu-latest
@@ -44,16 +57,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Golang Status
-        run: find buildScript libcore/*.sh nb4a.properties | xargs cat | sha1sum > golang_status
-      - name: Libcore Status
-        run: git ls-files libcore | xargs cat | sha1sum > libcore_status
-      - name: LibCore Cache
-        uses: actions/cache@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          path: |
-            app/libs/libcore.aar
-          key: ${{ hashFiles('.github/workflows/*', 'golang_status', 'libcore_status') }}
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Download LibCore AAR
+        uses: actions/download-artifact@v4
+        with:
+          name: libcore-aar
+          path: app/libs
+      - name: Verify LibCore AAR
+        run: |
+          test -s app/libs/libcore.aar
+          unzip -p app/libs/libcore.aar classes.jar > /tmp/libcore-classes.jar
+          unzip -l /tmp/libcore-classes.jar | grep -q 'libcore/Libcore.class'
+          unzip -l /tmp/libcore-classes.jar | grep -q 'go/Seq.class'
       - name: Gradle cache
         uses: actions/cache@v4
         with:
@@ -147,6 +166,12 @@ jobs:
           sha256sum *.apk > sha256sums.txt
           cd ..
           ls -la apks/
+      - name: Sync Release Notes
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            awk '/^# OwnBox for Android v/{if(found) exit; found=1} found' CHANGELOG.md > RELEASE_NOTES.md
+          fi
+          cat RELEASE_NOTES.md
       - name: Publish to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
