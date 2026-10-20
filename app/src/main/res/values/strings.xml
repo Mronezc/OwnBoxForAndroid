@@ -956,7 +956,7 @@
     <string name="traffic_waiting_clash">Waiting for Clash API or VPN not started...</string>
     <string name="group_all">All</string>
     <string name="close">Close</string>
-    <string name="landing_ip_details_title">Landing IP Details</string>
+    <string name="landing_ip_details_title">Outbound IP</string>
     <string name="landing_ip_address">Outbound IP</string>
     <string name="landing_ip_isp">ISP / Operator</string>
     <string name="landing_ip_asn">ASN</string>
@@ -1164,27 +1164,37 @@
 
 
     <!-- Network Diagnostics & Egress IP Details -->
-    <string name="landing_ip_risk_level">Security Assessment</string>
-    <string name="landing_ip_network_type">Network Type</string>
-    <string name="landing_ip_threat_tags">Threat Tags</string>
-    <string name="landing_ip_source">Data Source</string>
-    <string name="landing_ip_org">Organization</string>
+        <string name="landing_ip_disclaimer">Third-party API, for reference only</string>
+    <string name="landing_ip_section_basic">Basic Info</string>
+    <string name="landing_ip_section_network">Network</string>
+    <string name="landing_ip_section_other">Other</string>
+    <string name="landing_ip_label_level">Level</string>
+    <string name="landing_ip_label_type">Type</string>
+    <string name="landing_ip_label_hit_tag">Hit Tag</string>
+    <string name="landing_ip_label_org">Organization</string>
+    <string name="landing_ip_label_asn">ASN</string>
+    <string name="landing_ip_label_source">Source</string>
+    <string name="landing_ip_label_hide_ip">Hide IP</string>
+    <string name="landing_ip_level_normal">Normal</string>
+    <string name="landing_ip_level_good">Good</string>
+    <string name="landing_ip_level_risk">Risk</string>
+    <string name="landing_ip_type_datacenter">Datacenter</string>
+    <string name="landing_ip_type_residential">Residential</string>
+    <string name="landing_ip_type_cellular">Cellular</string>
+    <string name="landing_ip_tag_none">None</string>
     <string name="menu_diagnostics">Network Diagnostics</string>
     <string name="diagnostics_title">Network Diagnostics</string>
     <string name="diagnostics_retest_all">Retest All</string>
     <string name="diagnostics_retest">Retest</string>
     <string name="diagnostics_ip_overview">Outbound IP Overview</string>
-    <string name="diagnostics_view_ip_details">View Full Details</string>
+    <string name="diagnostics_view_ip_details">View Details</string>
     <string name="diagnostics_refresh_ip">Refresh IP</string>
     <string name="diagnostics_services_title">Service Status Check</string>
     <string name="diagnostics_category_all">All</string>
     <string name="diagnostics_category_ai">AI Tools</string>
     <string name="diagnostics_category_streaming">Streaming</string>
     <string name="diagnostics_category_common">Common</string>
-    <string name="diagnostics_state_available">Available</string>
-    <string name="diagnostics_state_restricted">Restricted</string>
-    <string name="diagnostics_state_unavailable">Unavailable</string>
-    <string name="diagnostics_state_testing">Testing...</string>
+    <string name="service_status_available">Available</string>
+    <string name="service_status_failed">Failed</string>
     <string name="diagnostics_not_connected">Proxy not connected. Please connect first.</string>
-
 </resources>

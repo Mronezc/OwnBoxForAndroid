@@ -11,7 +11,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import libcore.Libcore
 import moe.matsuri.nb4a.utils.Util
-import java.util.regex.Pattern
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 enum class ServiceCategory(val label: String) {
     ALL("全部"),
@@ -24,7 +26,6 @@ enum class ServiceTestState {
     IDLE,
     TESTING,
     AVAILABLE,
-    RESTRICTED,
     UNAVAILABLE
 }
 
@@ -36,30 +37,48 @@ data class ServiceStatusItem(
     val testUrl: String,
     var state: ServiceTestState = ServiceTestState.IDLE,
     var latencyMs: Long = 0L,
-    var statusSummary: String = "未测试",
-    var detailMessage: String = "",
+    var outboundIp: String = "",
+    var countryFlag: String = "",
+    var subtitle: String = "-",
+    var testTimestamp: String = "-",
 )
 
 object ServiceDiagnosticsManager {
 
-    private val concurrencySemaphore = Semaphore(4) // 控制最大并发数为 4
+    private val concurrencySemaphore = Semaphore(6) // 最大并发数为 6
+    private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
     fun createInitialList(): List<ServiceStatusItem> {
         return listOf(
+            // 常用服务
+            ServiceStatusItem(
+                id = "google",
+                name = "Google",
+                category = ServiceCategory.COMMON,
+                iconRes = R.drawable.ic_baseline_search_24,
+                testUrl = "https://www.google.com/generate_204"
+            ),
+            ServiceStatusItem(
+                id = "github",
+                name = "GitHub",
+                category = ServiceCategory.COMMON,
+                iconRes = R.drawable.ic_device_developer_mode,
+                testUrl = "https://github.com/"
+            ),
             // AI 工具
             ServiceStatusItem(
                 id = "chatgpt",
                 name = "ChatGPT",
                 category = ServiceCategory.AI,
                 iconRes = R.drawable.ic_platform_chatgpt,
-                testUrl = "https://chatgpt.com/"
+                testUrl = "https://chatgpt.com/cdn-cgi/trace"
             ),
             ServiceStatusItem(
                 id = "claude",
                 name = "Claude",
                 category = ServiceCategory.AI,
                 iconRes = R.drawable.ic_platform_claude,
-                testUrl = "https://claude.ai/login"
+                testUrl = "https://claude.ai/cdn-cgi/trace"
             ),
             ServiceStatusItem(
                 id = "gemini",
@@ -74,7 +93,7 @@ object ServiceDiagnosticsManager {
                 name = "YouTube",
                 category = ServiceCategory.STREAMING,
                 iconRes = R.drawable.ic_platform_youtube,
-                testUrl = "https://www.youtube.com/premium"
+                testUrl = "https://www.youtube.com/generate_204"
             ),
             ServiceStatusItem(
                 id = "netflix",
@@ -109,23 +128,9 @@ object ServiceDiagnosticsManager {
                 name = "哔哩哔哩",
                 category = ServiceCategory.STREAMING,
                 iconRes = R.drawable.ic_baseline_stream_24,
-                testUrl = "https://api.bilibili.com/x/web-interface/nav"
+                testUrl = "https://www.bilibili.com/"
             ),
-            // 常用与开发
-            ServiceStatusItem(
-                id = "google",
-                name = "Google",
-                category = ServiceCategory.COMMON,
-                iconRes = R.drawable.ic_baseline_search_24,
-                testUrl = "https://www.google.com/generate_204"
-            ),
-            ServiceStatusItem(
-                id = "github",
-                name = "GitHub",
-                category = ServiceCategory.COMMON,
-                iconRes = R.drawable.ic_device_developer_mode,
-                testUrl = "https://api.github.com/zen"
-            ),
+            // 更多常用服务
             ServiceStatusItem(
                 id = "tiktok",
                 name = "TikTok",
@@ -138,7 +143,7 @@ object ServiceDiagnosticsManager {
                 name = "Discord",
                 category = ServiceCategory.COMMON,
                 iconRes = R.drawable.ic_social_emoji_symbols,
-                testUrl = "https://discord.com/api/v9/experiments"
+                testUrl = "https://discord.com/"
             )
         )
     }
@@ -161,16 +166,15 @@ object ServiceDiagnosticsManager {
     ): ServiceStatusItem = withContext(Dispatchers.IO) {
         if (!DataStore.serviceState.connected) {
             item.state = ServiceTestState.UNAVAILABLE
-            item.statusSummary = "未连接代理"
-            item.detailMessage = "请先开启连接"
+            item.subtitle = "-"
             item.latencyMs = 0L
+            item.testTimestamp = timeFormat.format(Date())
             onUpdate?.invoke(item)
             return@withContext item
         }
 
         item.state = ServiceTestState.TESTING
-        item.statusSummary = "检测中..."
-        item.detailMessage = "正在建立 TLS 握手..."
+        item.subtitle = "检测中..."
         onUpdate?.invoke(item)
 
         concurrencySemaphore.withPermit {
@@ -187,159 +191,47 @@ object ServiceDiagnosticsManager {
                         setUserAgent(ua)
                     }
                     val resp = req.execute()
+                    val cost = (System.currentTimeMillis() - startTime).coerceAtLeast(1L)
                     val body = runCatching { Util.getStringBox(resp.contentString) }.getOrDefault("")
-                    val cost = (System.currentTimeMillis() - startTime).coerceAtLeast(1L)
-                    item.latencyMs = cost
 
-                    when (item.id) {
-                        "chatgpt" -> {
-                            val lower = body.lowercase()
-                            if (lower.contains("cf-mitigated") || lower.contains("attention required") || lower.contains("1020")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "CF 盾牌拦截"
-                                item.detailMessage = "触发 Cloudflare 验证或 OpenAI IP 限制"
-                            } else if (lower.contains("country not supported") || lower.contains("unavailable in your country")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "地区未开放"
-                                item.detailMessage = "当前节点机房被列为未开放服务区"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "正常可用"
-                                item.detailMessage = "握手耗时 ${cost}ms · 认证网关畅通"
-                            }
-                        }
-                        "claude" -> {
-                            val lower = body.lowercase()
-                            if (lower.contains("app unavailable in your region") || lower.contains("403 forbidden")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "地区未授权"
-                                item.detailMessage = "当前节点所在地区尚未开通 Claude"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "正常可用"
-                                item.detailMessage = "握手耗时 ${cost}ms · 区域授权正常"
-                            }
-                        }
-                        "gemini" -> {
-                            val lower = body.lowercase()
-                            if (lower.contains("not supported in your country") || lower.contains("unavailable in your territory")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "地区未开放"
-                                item.detailMessage = "Google Gemini 暂未对该机房 IP 开放"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "正常可用"
-                                item.detailMessage = "握手耗时 ${cost}ms · 模型服务畅通"
-                            }
-                        }
-                        "youtube" -> {
-                            val matcher = Pattern.compile("\"countryCode\"\\s*:\\s*\"([A-Za-z]{2})\"").matcher(body)
-                            val countryCode = if (matcher.find()) matcher.group(1)?.uppercase().orEmpty() else ""
-                            val flag = if (countryCode.isNotBlank()) LandingIpManager.countryCodeToFlagEmoji(countryCode) else ""
-                            if (body.contains("Premium is not available in your country")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "地区未开通"
-                                item.detailMessage = "YouTube Premium 在当前地区未开放"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = if (flag.isNotBlank()) "已解锁 $flag $countryCode" else "正常可用"
-                                item.detailMessage = "握手耗时 ${cost}ms · 视频与 Premium 正常"
-                            }
-                        }
-                        "netflix" -> {
-                            if (body.contains("title/80018499") || body.contains("watch") || body.contains("House of Cards")) {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "原生全解锁"
-                                item.detailMessage = "握手耗时 ${cost}ms · 完整支持非自制版权剧"
-                            } else {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "仅限自制剧"
-                                item.detailMessage = "非自制剧受限，仅可观看自制剧"
-                            }
-                        }
-                        "disney" -> {
-                            val lower = body.lowercase()
-                            if (lower.contains("not available in your region") || lower.contains("restricted") || lower.contains("unavailable")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "地区限制"
-                                item.detailMessage = "当前地区不在 Disney+ 官方服务范围内"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "原生支持"
-                                item.detailMessage = "握手耗时 ${cost}ms · 流媒体已授权"
-                            }
-                        }
-                        "prime" -> {
-                            val lower = body.lowercase()
-                            if (lower.contains("georestricted") || lower.contains("not-available-in-your-country")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "地区限制"
-                                item.detailMessage = "当前节点受 Prime Video 地域限制"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "正常可用"
-                                item.detailMessage = "握手耗时 ${cost}ms · 流媒体版权库畅通"
-                            }
-                        }
-                        "spotify" -> {
-                            val lower = body.lowercase()
-                            if (lower.contains("not available in your country")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "未开放"
-                                item.detailMessage = "出口 IP 所在地区暂未开放 Spotify"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "正常可用"
-                                item.detailMessage = "握手耗时 ${cost}ms · 音乐流媒体正常"
-                            }
-                        }
-                        "tiktok" -> {
-                            if (body.contains("tiktok-verify-page")) {
-                                item.state = ServiceTestState.RESTRICTED
-                                item.statusSummary = "风控拦截"
-                                item.detailMessage = "触发 TikTok 验证码"
-                            } else {
-                                item.state = ServiceTestState.AVAILABLE
-                                item.statusSummary = "正常可用"
-                                item.detailMessage = "握手耗时 ${cost}ms · 短视频接入正常"
-                            }
-                        }
-                        "bilibili" -> {
-                            item.state = ServiceTestState.AVAILABLE
-                            item.statusSummary = "正常连通"
-                            item.detailMessage = "握手耗时 ${cost}ms · 接口响应正常"
-                        }
-                        else -> {
-                            item.state = ServiceTestState.AVAILABLE
-                            item.statusSummary = "正常可用"
-                            item.detailMessage = "握手耗时 ${cost}ms · 服务连通正常"
+                    // 检查 Cloudflare trace 端点
+                    var parsedIp = ""
+                    var parsedLoc = ""
+                    if (item.testUrl.contains("cdn-cgi/trace")) {
+                        for (line in body.lines()) {
+                            val trimmed = line.trim()
+                            if (trimmed.startsWith("ip=")) parsedIp = trimmed.substring(3).trim()
+                            else if (trimmed.startsWith("loc=")) parsedLoc = trimmed.substring(4).trim().uppercase()
                         }
                     }
-                    true
-                } catch (e: Throwable) {
-                    val msg = e.message.orEmpty()
-                    val cost = (System.currentTimeMillis() - startTime).coerceAtLeast(1L)
-                    item.latencyMs = cost
-                    if (msg.contains("403") || msg.contains("cf-mitigated") || msg.contains("Attention Required") || msg.contains("restricted")) {
-                        item.state = ServiceTestState.RESTRICTED
-                        item.statusSummary = "访问受限"
-                        item.detailMessage = "HTTP 403 权限阻断或人机验证"
-                        true
+
+                    val cachedInfo = LandingIpManager.getCachedInfo()
+                    val ip = parsedIp.ifBlank { cachedInfo?.ip.orEmpty() }
+                    val flag = if (parsedLoc.isNotBlank()) {
+                        LandingIpManager.countryCodeToFlagEmoji(parsedLoc)
                     } else {
-                        false
+                        cachedInfo?.countryFlag ?: "🌐"
                     }
+
+                    item.latencyMs = cost
+                    item.outboundIp = ip
+                    item.countryFlag = flag
+                    item.state = ServiceTestState.AVAILABLE
+                    item.subtitle = if (ip.isNotBlank()) "$flag $ip".trim() else "可用"
+                    true
+                } catch (_: Throwable) {
+                    false
                 } finally {
                     runCatching { client?.close() }
                 }
-            }
+            } ?: false
 
-            if (success != true) {
+            if (!success) {
                 item.state = ServiceTestState.UNAVAILABLE
-                item.statusSummary = "连接超时"
-                item.detailMessage = "超过 4000ms 未响应"
+                item.subtitle = "-"
                 item.latencyMs = 0L
             }
-
+            item.testTimestamp = timeFormat.format(Date())
             onUpdate?.invoke(item)
             item
         }

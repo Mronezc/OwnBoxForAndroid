@@ -860,7 +860,7 @@
     <string name="traffic_waiting_clash">正在等待 Clash API 连接，请确保 VPN 已启动...</string>
     <string name="group_all">全部</string>
     <string name="close">关闭</string>
-    <string name="landing_ip_details_title">落地 IP 详情</string>
+    <string name="landing_ip_details_title">出站 IP</string>
     <string name="landing_ip_address">出口 IP 地址</string>
     <string name="landing_ip_isp">网络运营商</string>
     <string name="landing_ip_asn">ASN 归属</string>
@@ -1081,15 +1081,28 @@
 
 
     <!-- Network Diagnostics & Egress IP Details -->
-    <string name="landing_ip_risk_level">安全风控评估</string>
-    <string name="landing_ip_network_type">网络类型</string>
-    <string name="landing_ip_threat_tags">特征标签</string>
-    <string name="landing_ip_source">信息来源</string>
-    <string name="landing_ip_org">组织机构</string>
+        <string name="landing_ip_disclaimer">第三方api，仅供参考</string>
+    <string name="landing_ip_section_basic">基础信息</string>
+    <string name="landing_ip_section_network">网络</string>
+    <string name="landing_ip_section_other">其他</string>
+    <string name="landing_ip_label_level">等级</string>
+    <string name="landing_ip_label_type">类型</string>
+    <string name="landing_ip_label_hit_tag">命中标记</string>
+    <string name="landing_ip_label_org">组织</string>
+    <string name="landing_ip_label_asn">ASN</string>
+    <string name="landing_ip_label_source">采用来源</string>
+    <string name="landing_ip_label_hide_ip">隐藏 IP</string>
+    <string name="landing_ip_level_normal">普通</string>
+    <string name="landing_ip_level_good">良好</string>
+    <string name="landing_ip_level_risk">风险</string>
+    <string name="landing_ip_type_datacenter">机房</string>
+    <string name="landing_ip_type_residential">住宅</string>
+    <string name="landing_ip_type_cellular">移动</string>
+    <string name="landing_ip_tag_none">无</string>
     <string name="menu_diagnostics">网络诊断</string>
-    <string name="diagnostics_title">网络诊断中心</string>
+    <string name="diagnostics_title">网络诊断</string>
     <string name="diagnostics_retest_all">全部重测</string>
-    <string name="diagnostics_retest">重新测试</string>
+    <string name="diagnostics_retest">重测</string>
     <string name="diagnostics_ip_overview">当前出口 IP 概览</string>
     <string name="diagnostics_view_ip_details">查看完整详情</string>
     <string name="diagnostics_refresh_ip">刷新 IP</string>
@@ -1098,10 +1111,7 @@
     <string name="diagnostics_category_ai">AI 工具</string>
     <string name="diagnostics_category_streaming">流媒体</string>
     <string name="diagnostics_category_common">常用服务</string>
-    <string name="diagnostics_state_available">正常可用</string>
-    <string name="diagnostics_state_restricted">地区受限</string>
-    <string name="diagnostics_state_unavailable">不可用</string>
-    <string name="diagnostics_state_testing">检测中...</string>
-    <string name="diagnostics_not_connected">未连接代理节点，请先启动连接</string>
-
+    <string name="service_status_available">可用</string>
+    <string name="service_status_failed">检测失败</string>
+    <string name="diagnostics_not_connected">未连接代理节点，请先开启连接</string>
 </resources>

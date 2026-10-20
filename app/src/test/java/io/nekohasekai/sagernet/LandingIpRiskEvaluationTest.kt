@@ -133,6 +133,45 @@ class LandingIpRiskEvaluationTest {
     }
 
     @Test
+    fun testMaskedIpAndFlClashFields() {
+        val infoV4 = LandingIpInfo(
+            ip = "54.249.187.104",
+            country = "Japan",
+            countryCode = "JP",
+            countryFlag = "🇯🇵",
+            city = "Tokyo",
+            region = "Tokyo",
+            isp = "Amazon.com, Inc.",
+            org = "Amazon.com, Inc.",
+            asn = "AS16509",
+            durationMs = 210,
+            levelLabel = "普通",
+            typeLabel = "机房",
+            hitTag = "无",
+            source = "ipquery.io",
+        )
+        assertEquals("54.249.*.*", infoV4.getMaskedIp())
+        assertEquals("普通", infoV4.levelLabel)
+        assertEquals("机房", infoV4.typeLabel)
+        assertEquals("无", infoV4.hitTag)
+        assertEquals("ipquery.io", infoV4.source)
+
+        val infoV6 = LandingIpInfo(
+            ip = "2400:cb00:2048:1::6814:260b",
+            country = "Japan",
+            countryCode = "JP",
+            countryFlag = "🇯🇵",
+            city = "Tokyo",
+            region = "Tokyo",
+            isp = "Cloudflare",
+            org = "Cloudflare",
+            asn = "AS13335",
+            durationMs = 180,
+        )
+        assertEquals("2400:cb00:****:****", infoV6.getMaskedIp())
+    }
+
+    @Test
     fun testInitialServiceListCountAndIds() {
         val list = ServiceDiagnosticsManager.createInitialList()
         assertEquals(13, list.size)

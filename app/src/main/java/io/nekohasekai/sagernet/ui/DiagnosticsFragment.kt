@@ -1,7 +1,6 @@
 package io.nekohasekai.sagernet.ui
 
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -31,7 +30,6 @@ class DiagnosticsFragment : ToolbarFragment(R.layout.layout_diagnostics) {
     private lateinit var tvOverviewIpVersion: TextView
     private lateinit var tvOverviewLocation: TextView
     private lateinit var tvOverviewNetworkType: TextView
-    private lateinit var tvOverviewRiskBadge: TextView
     private lateinit var cardIpOverview: MaterialCardView
     private lateinit var btnOverviewFullDetails: MaterialButton
     private lateinit var btnOverviewRefreshIp: MaterialButton
@@ -42,6 +40,7 @@ class DiagnosticsFragment : ToolbarFragment(R.layout.layout_diagnostics) {
     private lateinit var adapter: ServiceDiagnosticsAdapter
     private val serviceList = mutableListOf<ServiceStatusItem>()
     private var testAllJob: Job? = null
+    private var ipOverviewJob: Job? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -54,7 +53,6 @@ class DiagnosticsFragment : ToolbarFragment(R.layout.layout_diagnostics) {
         tvOverviewIpVersion = view.findViewById(R.id.tv_overview_ip_version)
         tvOverviewLocation = view.findViewById(R.id.tv_overview_location)
         tvOverviewNetworkType = view.findViewById(R.id.tv_overview_network_type)
-        tvOverviewRiskBadge = view.findViewById(R.id.tv_overview_risk_badge)
         cardIpOverview = view.findViewById(R.id.card_ip_overview)
         btnOverviewFullDetails = view.findViewById(R.id.btn_overview_full_details)
         btnOverviewRefreshIp = view.findViewById(R.id.btn_overview_refresh_ip)
@@ -138,24 +136,29 @@ class DiagnosticsFragment : ToolbarFragment(R.layout.layout_diagnostics) {
             tvOverviewIp.text = getString(R.string.landing_ip_failed)
             tvOverviewLocation.text = getString(R.string.diagnostics_not_connected)
             tvOverviewNetworkType.text = ""
-            tvOverviewRiskBadge.visibility = View.GONE
             return
         }
 
         tvOverviewIp.text = getString(R.string.landing_ip_querying)
         tvOverviewLocation.text = "正在检测当前代理出站链路..."
-        tvOverviewRiskBadge.visibility = View.GONE
+        btnOverviewRefreshIp.isEnabled = false
+        btnOverviewRefreshIp.text = "刷新中..."
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            val result = LandingIpManager.queryLandingIp(DataStore.selectedProxy, forceRefresh = force)
-            result.onSuccess { info ->
-                bindIpInfo(info)
-            }.onFailure { err ->
-                tvOverviewFlag.text = "⚠️"
-                tvOverviewIp.text = "检测失败"
-                tvOverviewLocation.text = err.message ?: "无法获取当前出口 IP"
-                tvOverviewNetworkType.text = ""
-                tvOverviewRiskBadge.visibility = View.GONE
+        ipOverviewJob?.cancel()
+        ipOverviewJob = viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val result = LandingIpManager.queryLandingIp(DataStore.selectedProxy, forceRefresh = force)
+                result.onSuccess { info ->
+                    bindIpInfo(info)
+                }.onFailure { err ->
+                    tvOverviewFlag.text = "⚠️"
+                    tvOverviewIp.text = "检测失败"
+                    tvOverviewLocation.text = err.message ?: "无法获取当前出口 IP"
+                    tvOverviewNetworkType.text = ""
+                }
+            } finally {
+                btnOverviewRefreshIp.isEnabled = true
+                btnOverviewRefreshIp.text = getString(R.string.diagnostics_refresh_ip)
             }
         }
     }
@@ -165,17 +168,7 @@ class DiagnosticsFragment : ToolbarFragment(R.layout.layout_diagnostics) {
         tvOverviewIp.text = info.ip
         tvOverviewIpVersion.text = info.ipVersion
         tvOverviewLocation.text = "${info.locationText} · ${info.asn}".trim()
-        tvOverviewNetworkType.text = info.networkType
-
-        val density = resources.displayMetrics.density
-        val riskBg = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 4f * density
-            setColor(Color.parseColor(info.riskLevel.colorHex))
-        }
-        tvOverviewRiskBadge.text = "${info.riskLevel.label} (${info.riskScore}%)"
-        tvOverviewRiskBadge.background = riskBg
-        tvOverviewRiskBadge.visibility = View.VISIBLE
+        tvOverviewNetworkType.text = if (info.typeLabel.isNotBlank()) "网络类型: ${info.typeLabel}" else info.networkType
     }
 
     private fun showFullIpDetails() {
@@ -230,5 +223,6 @@ class DiagnosticsFragment : ToolbarFragment(R.layout.layout_diagnostics) {
     override fun onDestroyView() {
         super.onDestroyView()
         testAllJob?.cancel()
+        ipOverviewJob?.cancel()
     }
 }

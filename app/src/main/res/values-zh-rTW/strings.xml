@@ -793,16 +793,30 @@
     <string name="retain_valid_nodes_sum">當訂閱不再列出上次測試成功的節點時，仍保留它們。</string>
 
     <!-- Network Diagnostics & Egress IP Details -->
-    <string name="landing_ip_risk_level">安全風控評估</string>
-    <string name="landing_ip_network_type">網路類型</string>
-    <string name="landing_ip_threat_tags">特徵標籤</string>
-    <string name="landing_ip_source">資訊來源</string>
-    <string name="landing_ip_org">組織機構</string>
+    <string name="landing_ip_details_title">出站 IP</string>
+    <string name="landing_ip_disclaimer">第三方api，僅供參考</string>
+    <string name="landing_ip_section_basic">基礎資訊</string>
+    <string name="landing_ip_section_network">網路</string>
+    <string name="landing_ip_section_other">其他</string>
+    <string name="landing_ip_label_level">等級</string>
+    <string name="landing_ip_label_type">類型</string>
+    <string name="landing_ip_label_hit_tag">命中標記</string>
+    <string name="landing_ip_label_org">組織</string>
+    <string name="landing_ip_label_asn">ASN</string>
+    <string name="landing_ip_label_source">採用來源</string>
+    <string name="landing_ip_label_hide_ip">隱藏 IP</string>
+    <string name="landing_ip_level_normal">普通</string>
+    <string name="landing_ip_level_good">良好</string>
+    <string name="landing_ip_level_risk">風險</string>
+    <string name="landing_ip_type_datacenter">機房</string>
+    <string name="landing_ip_type_residential">住宅</string>
+    <string name="landing_ip_type_cellular">行動</string>
+    <string name="landing_ip_tag_none">無</string>
     <string name="menu_diagnostics">網路診斷</string>
-    <string name="diagnostics_title">網路診斷中心</string>
+    <string name="diagnostics_title">網路診斷</string>
     <string name="diagnostics_retest_all">全部重測</string>
-    <string name="diagnostics_retest">重新測試</string>
-    <string name="diagnostics_ip_overview">當前出口 IP 概覽</string>
+    <string name="diagnostics_retest">重測</string>
+    <string name="diagnostics_ip_overview">目前出口 IP 概覽</string>
     <string name="diagnostics_view_ip_details">檢視完整詳情</string>
     <string name="diagnostics_refresh_ip">重新整理 IP</string>
     <string name="diagnostics_services_title">服務狀態檢測</string>
@@ -810,10 +824,7 @@
     <string name="diagnostics_category_ai">AI 工具</string>
     <string name="diagnostics_category_streaming">串流媒體</string>
     <string name="diagnostics_category_common">常用服務</string>
-    <string name="diagnostics_state_available">正常可用</string>
-    <string name="diagnostics_state_restricted">地區受限</string>
-    <string name="diagnostics_state_unavailable">不可用</string>
-    <string name="diagnostics_state_testing">檢測中...</string>
-    <string name="diagnostics_not_connected">未連接代理節點，請先啟動連接</string>
-
+    <string name="service_status_available">可用</string>
+    <string name="service_status_failed">檢測失敗</string>
+    <string name="diagnostics_not_connected">未連線代理節點，請先開啟連線</string>
 </resources>

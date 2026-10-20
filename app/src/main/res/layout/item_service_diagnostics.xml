@@ -20,16 +20,35 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="12dp">
+        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
 
-        <ImageView
-            android:id="@+id/service_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginEnd="12dp"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_baseline_search_24" />
+        <!-- Left: Icon + Status Dot -->
+        <FrameLayout
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginEnd="10dp">
 
+            <ImageView
+                android:id="@+id/service_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_baseline_search_24" />
+
+            <View
+                android:id="@+id/view_status_dot"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/bg_status_dot" />
+
+        </FrameLayout>
+
+        <!-- Center: Name + Badge, Subtitle (Flag + IP) -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -49,72 +68,93 @@
                     android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="?android:attr/textColorPrimary"
-                    tools:text="ChatGPT" />
+                    tools:text="Google" />
 
                 <TextView
-                    android:id="@+id/tv_service_category"
+                    android:id="@+id/tv_service_badge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:textSize="11sp"
-                    android:textColor="?android:attr/textColorSecondary"
-                    tools:text="AI 工具" />
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="1dp"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="#FFFFFF"
+                    tools:text="可用" />
 
             </LinearLayout>
 
             <TextView
-                android:id="@+id/tv_service_detail"
+                android:id="@+id/tv_service_sub"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="3dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textSize="12sp"
                 android:textColor="?android:attr/textColorSecondary"
-                tools:text="HTTP 200 · 认证服务畅通" />
+                tools:text="🇯🇵 54.249.187.104" />
 
         </LinearLayout>
 
+        <!-- Right: Latency, Timestamp, Single Refresh Button -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp">
 
                 <TextView
-                    android:id="@+id/tv_service_status"
+                    android:id="@+id/tv_service_latency"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="2dp"
-                    android:textSize="11sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    tools:text="正常可用" />
+                    android:textColor="?android:attr/textColorPrimary"
+                    tools:text="701 ms" />
+
+                <TextView
+                    android:id="@+id/tv_service_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:textSize="11sp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    tools:text="01:51:53" />
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp">
+
+                <ImageView
+                    android:id="@+id/btn_item_refresh"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="8dp"
+                    android:contentDescription="@string/diagnostics_retest"
+                    android:src="@drawable/ic_baseline_refresh_24"
+                    app:tint="?android:attr/textColorSecondary" />
 
                 <ProgressBar
-                    android:id="@+id/pb_service_testing"
-                    style="?android:attr/progressBarStyleSmall"
+                    android:id="@+id/pb_item_testing"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:visibility="gone" />
 
             </FrameLayout>
-
-            <TextView
-                android:id="@+id/tv_service_latency"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:fontFamily="monospace"
-                android:textSize="11sp"
-                android:textColor="?android:attr/textColorSecondary"
-                tools:text="148 ms" />
 
         </LinearLayout>
 

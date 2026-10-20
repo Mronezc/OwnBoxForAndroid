@@ -4,70 +4,128 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.Animation
+import android.view.animation.RotateAnimation
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.switchmaterial.SwitchMaterial
 import io.nekohasekai.sagernet.R
-import io.nekohasekai.sagernet.ktx.getColorAttr
+import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.utils.LandingIpInfo
+import io.nekohasekai.sagernet.utils.LandingIpManager
 import io.nekohasekai.sagernet.utils.Theme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 object LandingIpBottomSheet {
 
     fun show(
         activity: Activity,
-        info: LandingIpInfo,
-        onRefresh: () -> Unit,
+        initialInfo: LandingIpInfo,
+        onRefresh: () -> Unit = {},
     ) {
         val dialog = BottomSheetDialog(activity)
         val view = LayoutInflater.from(activity).inflate(R.layout.layout_landing_ip_details, null)
         dialog.setContentView(view)
 
-        val tvLocation = view.findViewById<TextView>(R.id.tv_location)
-        val tvFullIp = view.findViewById<TextView>(R.id.tv_full_ip)
-        val tvIpVersion = view.findViewById<TextView>(R.id.tv_ip_version)
-        val tvRiskBadge = view.findViewById<TextView>(R.id.tv_risk_badge)
-        val tvNetworkType = view.findViewById<TextView>(R.id.tv_network_type)
-        val tvThreatTags = view.findViewById<TextView>(R.id.tv_threat_tags)
-        val tvSource = view.findViewById<TextView>(R.id.tv_source)
-        val tvIsp = view.findViewById<TextView>(R.id.tv_isp)
+        val btnClose = view.findViewById<ImageView>(R.id.btn_close)
+        val btnRefresh = view.findViewById<ImageView>(R.id.btn_refresh)
+        val tvIpAddress = view.findViewById<TextView>(R.id.tv_ip_address)
+        val layoutRowIp = view.findViewById<LinearLayout>(R.id.layout_row_ip)
+        val tvLevel = view.findViewById<TextView>(R.id.tv_level)
+        val tvType = view.findViewById<TextView>(R.id.tv_type)
+        val tvHitTag = view.findViewById<TextView>(R.id.tv_hit_tag)
         val tvOrg = view.findViewById<TextView>(R.id.tv_org)
         val tvAsn = view.findViewById<TextView>(R.id.tv_asn)
-        val tvDuration = view.findViewById<TextView>(R.id.tv_duration)
-        val btnCopyIp = view.findViewById<MaterialButton>(R.id.btn_copy_ip)
-        val btnRetest = view.findViewById<MaterialButton>(R.id.btn_retest)
-        val btnDismiss = view.findViewById<MaterialButton>(R.id.btn_dismiss)
+        val tvSource = view.findViewById<TextView>(R.id.tv_source)
+        val switchHideIp = view.findViewById<SwitchMaterial>(R.id.switch_hide_ip)
 
-        tvLocation.text = info.locationText
-        tvFullIp.text = info.ip
-        tvIpVersion.text = info.ipVersion
-        tvRiskBadge.text = "${info.riskLevel.label} (${info.riskScore}%)"
-        val density = activity.resources.displayMetrics.density
-        val riskBg = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 6f * density
-            setColor(Color.parseColor(info.riskLevel.colorHex))
+        var currentInfo = initialInfo
+
+        fun bindInfo(info: LandingIpInfo) {
+            currentInfo = info
+            val isHidden = DataStore.hideLandingIpAddress
+            tvIpAddress.text = if (isHidden) info.getMaskedIp() else info.ip
+            tvLevel.text = info.levelLabel.ifBlank { "普通" }
+            tvType.text = info.typeLabel.ifBlank { "机房" }
+            tvHitTag.text = info.hitTag.ifBlank { "无" }
+            tvOrg.text = info.org.ifBlank { activity.getString(R.string.unknown) }
+            tvAsn.text = info.asn.ifBlank { activity.getString(R.string.unknown) }
+            tvSource.text = info.source.ifBlank { "ipquery.io" }
         }
-        tvRiskBadge.background = riskBg
 
-        tvNetworkType.text = info.networkType
-        tvThreatTags.text = if (info.threatTags.isNotEmpty()) info.threatTags.joinToString(" · ") else "无异常标记"
-        tvSource.text = if (info.source.isNotBlank()) info.source else "权威 IP 智能库"
-        tvIsp.text = if (info.isp.isNotBlank()) info.isp else activity.getString(R.string.unknown)
-        tvOrg.text = if (info.org.isNotBlank()) info.org else activity.getString(R.string.unknown)
-        tvAsn.text = if (info.asn.isNotBlank()) info.asn else activity.getString(R.string.unknown)
-        tvDuration.text = "${info.durationMs} ms"
+        bindInfo(initialInfo)
 
-        val sheetContext = activity
-        val isNight = Theme.usingNightMode(sheetContext)
-        val isWhite = Theme.isWhiteTheme(sheetContext)
+        // Switch Hide IP
+        switchHideIp.isChecked = DataStore.hideLandingIpAddress
+        switchHideIp.setOnCheckedChangeListener { _, isChecked ->
+            DataStore.hideLandingIpAddress = isChecked
+            tvIpAddress.text = if (isChecked) currentInfo.getMaskedIp() else currentInfo.ip
+        }
+
+        // Copy IP on clicking IP row
+        val copyListener = View.OnClickListener {
+            val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("IP", currentInfo.ip)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(activity, activity.getString(R.string.copy_success), Toast.LENGTH_SHORT).show()
+        }
+        layoutRowIp.setOnClickListener(copyListener)
+        tvIpAddress.setOnClickListener(copyListener)
+
+        // Close button
+        btnClose.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        // Refresh button
+        btnRefresh.setOnClickListener {
+            val rotate = RotateAnimation(
+                0f, 360f,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f
+            ).apply {
+                duration = 600
+                repeatCount = Animation.INFINITE
+            }
+            btnRefresh.startAnimation(rotate)
+            btnRefresh.isEnabled = false
+
+            val scope = (activity as? LifecycleOwner)?.lifecycleScope
+            if (scope != null) {
+                scope.launch {
+                    val result = withContext(Dispatchers.IO) {
+                        LandingIpManager.queryLandingIp(DataStore.selectedProxy, forceRefresh = true)
+                    }
+                    btnRefresh.clearAnimation()
+                    btnRefresh.isEnabled = true
+                    result.onSuccess { newInfo ->
+                        bindInfo(newInfo)
+                        onRefresh()
+                    }.onFailure {
+                        Toast.makeText(activity, activity.getString(R.string.landing_ip_failed), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                btnRefresh.clearAnimation()
+                btnRefresh.isEnabled = true
+                onRefresh()
+            }
+        }
+
+        // Theme adjustments
+        val isNight = Theme.usingNightMode(activity)
+        val isWhite = Theme.isWhiteTheme(activity)
 
         val cardBgColor = when {
             isNight -> Color.parseColor("#1E1E1E")
@@ -91,72 +149,43 @@ object LandingIpBottomSheet {
         }
 
         if (cardBgColor != null) {
-            view.findViewById<MaterialCardView>(R.id.card_ip)?.setCardBackgroundColor(cardBgColor)
-            view.findViewById<MaterialCardView>(R.id.card_risk)?.setCardBackgroundColor(cardBgColor)
-            view.findViewById<MaterialCardView>(R.id.card_details)?.setCardBackgroundColor(cardBgColor)
+            view.findViewById<MaterialCardView>(R.id.card_basic_info)?.setCardBackgroundColor(cardBgColor)
+            view.findViewById<MaterialCardView>(R.id.card_network)?.setCardBackgroundColor(cardBgColor)
+            view.findViewById<MaterialCardView>(R.id.card_other)?.setCardBackgroundColor(cardBgColor)
         }
         if (strokeColor != null) {
-            view.findViewById<MaterialCardView>(R.id.card_ip)?.strokeColor = strokeColor
-            view.findViewById<MaterialCardView>(R.id.card_risk)?.strokeColor = strokeColor
-            view.findViewById<MaterialCardView>(R.id.card_details)?.strokeColor = strokeColor
-            view.findViewById<View>(R.id.divider_risk_1)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider_risk_2)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider_risk_3)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider1)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider_details_org)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider2)?.setBackgroundColor(strokeColor)
+            view.findViewById<MaterialCardView>(R.id.card_basic_info)?.strokeColor = strokeColor
+            view.findViewById<MaterialCardView>(R.id.card_network)?.strokeColor = strokeColor
+            view.findViewById<MaterialCardView>(R.id.card_other)?.strokeColor = strokeColor
+            view.findViewById<View>(R.id.divider_basic_1)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_basic_2)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_basic_3)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_network_1)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_network_2)?.setBackgroundColor(strokeColor)
         }
         if (primaryTextColor != null) {
             view.findViewById<TextView>(R.id.tv_title)?.setTextColor(primaryTextColor)
-            tvFullIp.setTextColor(primaryTextColor)
-            tvNetworkType.setTextColor(primaryTextColor)
-            tvThreatTags.setTextColor(primaryTextColor)
-            tvSource.setTextColor(primaryTextColor)
-            tvIsp.setTextColor(primaryTextColor)
+            tvIpAddress.setTextColor(primaryTextColor)
+            tvLevel.setTextColor(primaryTextColor)
+            tvType.setTextColor(primaryTextColor)
+            tvHitTag.setTextColor(primaryTextColor)
             tvOrg.setTextColor(primaryTextColor)
             tvAsn.setTextColor(primaryTextColor)
-            tvDuration.setTextColor(primaryTextColor)
+            tvSource.setTextColor(primaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_hide_ip)?.setTextColor(primaryTextColor)
         }
         if (secondaryTextColor != null) {
-            tvLocation.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_ip)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_risk)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_network_type)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_threat_tags)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_source)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_isp)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_disclaimer)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_header_basic)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_header_network)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_header_other)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_ip_address)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_level)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_type)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_hit_tag)?.setTextColor(secondaryTextColor)
             view.findViewById<TextView>(R.id.tv_label_org)?.setTextColor(secondaryTextColor)
             view.findViewById<TextView>(R.id.tv_label_asn)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_duration)?.setTextColor(secondaryTextColor)
-        }
-
-        val primaryColor = activity.getColorAttr(R.attr.colorPrimary)
-        val primaryStateList = ColorStateList.valueOf(primaryColor)
-
-        btnCopyIp.setTextColor(primaryStateList)
-        btnCopyIp.strokeColor = primaryStateList
-        btnCopyIp.iconTint = primaryStateList
-
-        btnRetest.setTextColor(primaryStateList)
-        btnRetest.strokeColor = primaryStateList
-
-        btnDismiss.backgroundTintList = primaryStateList
-        btnDismiss.setTextColor(Color.WHITE)
-
-        btnCopyIp.setOnClickListener {
-            val clipboard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("IP", info.ip)
-            clipboard.setPrimaryClip(clip)
-            Toast.makeText(activity, activity.getString(R.string.copy_success), Toast.LENGTH_SHORT).show()
-        }
-
-        btnRetest.setOnClickListener {
-            dialog.dismiss()
-            onRefresh()
-        }
-
-        btnDismiss.setOnClickListener {
-            dialog.dismiss()
+            view.findViewById<TextView>(R.id.tv_label_source)?.setTextColor(secondaryTextColor)
         }
 
         dialog.show()

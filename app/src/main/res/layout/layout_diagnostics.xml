@@ -59,19 +59,6 @@
                             android:textStyle="bold"
                             android:textColor="?android:attr/textColorPrimary" />
 
-                        <TextView
-                            android:id="@+id/tv_overview_risk_badge"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingStart="8dp"
-                            android:paddingEnd="8dp"
-                            android:paddingTop="3dp"
-                            android:paddingBottom="3dp"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:textColor="#FFFFFF"
-                            tools:text="低风险 (25%)" />
-
                     </LinearLayout>
 
                     <LinearLayout

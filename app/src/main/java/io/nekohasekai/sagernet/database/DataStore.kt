@@ -233,6 +233,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var individual by configurationStore.string(Key.INDIVIDUAL)
     var showDirectSpeed by configurationStore.boolean(Key.SHOW_DIRECT_SPEED) { true }
     var showLandingIp by configurationStore.boolean(Key.SHOW_LANDING_IP) { true }
+    var hideLandingIpAddress by configurationStore.boolean("hide_landing_ip_address") { false }
 
     val persistAcrossReboot by configurationStore.boolean(Key.PERSIST_ACROSS_REBOOT) { false }
 
