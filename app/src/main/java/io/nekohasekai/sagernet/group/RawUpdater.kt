@@ -250,20 +250,38 @@ object RawUpdater : GroupUpdater() {
 
         for (bean in proxies) {
             val name = bean.displayName()
-            val existingIndex = remainingExists.indexOfFirst { it.displayName() == name }
+            val beanHash = runCatching {
+                Protocols.Deduplication(bean, bean.javaClass.toString()).hash()
+            }.getOrNull()
+
+            // 阶段 1：首选端点核心特征（协议、服务器、端口、鉴权）哈希匹配
+            var existingIndex = if (beanHash != null) {
+                remainingExists.indexOfFirst {
+                    runCatching {
+                        val eb = it.requireBean()
+                        Protocols.Deduplication(eb, eb.javaClass.toString()).hash() == beanHash
+                    }.getOrDefault(false)
+                }
+            } else -1
+
+            // 阶段 2：回退至显示名称匹配
+            if (existingIndex < 0) {
+                existingIndex = remainingExists.indexOfFirst { it.displayName() == name }
+            }
             if (existingIndex >= 0) {
                 val entity = remainingExists.removeAt(existingIndex)
+                val oldName = entity.displayName()
                 val existsBean = entity.requireBean()
                 // 更新订阅，保留自定义覆写设置
                 bean.customOutboundJson = existsBean.customOutboundJson
                 bean.customConfigJson = existsBean.customConfigJson
                 when {
-                    existsBean != bean -> {
+                    existsBean != bean || oldName != name -> {
                         changed++
                         entity.putBean(bean)
                         entity.userOrder = userOrder
                         toUpdate.add(entity)
-                        updated[entity.displayName()] = name
+                        updated[oldName] = name
                         Logs.d("Updated profile: $name")
                     }
                     entity.userOrder != userOrder -> {
@@ -293,7 +311,37 @@ object RawUpdater : GroupUpdater() {
             userOrder++
         }
 
-        val toDelete = remainingExists
+        val toDelete = mutableListOf<ProxyEntity>()
+        val retained = mutableListOf<String>()
+
+        fun shouldRetainProfile(entity: ProxyEntity): Boolean {
+            // 1. 保护当前正在连接或选中的活跃节点
+            if (entity.id == DataStore.currentProfile) return true
+            // 2. 上次测试成功的有效节点 (status == 1 且 ping > 0)
+            if (entity.status == 1 && entity.ping > 0) return true
+            // 3. 有数据传输记录的节点
+            if (entity.rx > 0L || entity.tx > 0L) return true
+            // 4. 从未测速的节点 (status == 0) - 安全保留，避免未测试的新节点被误删
+            if (entity.status == 0) return true
+            // 5. 测速失败 (status == 3) 或插件缺失 (status == 2) 且不在订阅中 -> 允许删除清理
+            return false
+        }
+
+        if (subscription.retainValidNodes == true) {
+            for (entity in remainingExists) {
+                if (shouldRetainProfile(entity)) {
+                    // 保留有效节点，顺延编排其显示次序
+                    entity.userOrder = userOrder++
+                    toUpdate.add(entity)
+                    retained.add(entity.displayName())
+                    Logs.d("Retained valid profile: ${entity.displayName()}")
+                } else {
+                    toDelete.add(entity)
+                }
+            }
+        } else {
+            toDelete.addAll(remainingExists)
+        }
         val isShrunkTooMuch = !isFilterActive && exists.size >= 10 && proxies.size < exists.size * 0.70
         if (isShrunkTooMuch) {
             Logs.w("RawUpdater circuit breaker triggered: exists=${exists.size}, fetched=${proxies.size}, skipping deletion")
@@ -322,8 +370,9 @@ object RawUpdater : GroupUpdater() {
 
         val existCount = SagerDatabase.proxyDao.countByGroup(proxyGroup.id).toInt()
 
-        if (existCount != proxies.size) {
-            Logs.e("Exist profiles: $existCount, new profiles: ${proxies.size}")
+        val expectedCount = proxies.size + retained.size
+        if (existCount != expectedCount) {
+            Logs.e("Exist profiles: $existCount, expected profiles: $expectedCount (new=${proxies.size}, retained=${retained.size})")
         }
 
         // 补充节点文本回退提取机制（正则匹配 剩余流量 / 已用流量 / 套餐到期 并持久化到 subscription 实体）
@@ -386,7 +435,7 @@ object RawUpdater : GroupUpdater() {
         finishUpdate(proxyGroup)
 
         userInterface?.onUpdateSuccess(
-            proxyGroup, changed, added, updated, deleted, duplicate, byUser
+            proxyGroup, changed, added, updated, deleted, duplicate, byUser, retained
         )
     }
 

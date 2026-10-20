@@ -57,6 +57,7 @@
     <string name="group_changed">Updated: \n%s</string>
     <string name="group_deleted">Deleted: \n%s</string>
     <string name="group_duplicate">Duplicate: \n%s</string>
+    <string name="group_retained">Retained: \n%s</string>
     <!-- misc -->
     <string name="service_mode">Service Mode</string>
     <string name="service_mode_proxy">Proxy only</string>
@@ -1044,6 +1045,8 @@
     <string name="custom_color_hex_hint">e.g. #00E676</string>
     <string name="lock_user_agent">Lock User-Agent</string>
     <string name="lock_user_agent_sum">Prevent global sync or batch operations from overwriting this group\'s User-Agent</string>
+    <string name="retain_valid_nodes">Retain available profiles</string>
+    <string name="retain_valid_nodes_sum">Retain configurations that previously passed connection tests when they are no longer listed in the subscription.</string>
     <string name="enter_group_settings_title">Enter Group Settings</string>
     <string name="enter_group_settings_message">Enter independent settings for group \"%s\"?</string>
     <string name="enter">Enter</string>

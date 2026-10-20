@@ -24,7 +24,8 @@ object GroupManager {
             updated: Map<String, String>,
             deleted: List<String>,
             duplicate: List<String>,
-            byUser: Boolean
+            byUser: Boolean,
+            retained: List<String> = emptyList()
         )
 
         suspend fun onUpdateFailure(group: ProxyGroup, message: String)

@@ -34,6 +34,8 @@
 \n%s</string>
     <string name="group_changed">更新：
 \n%s</string>
+    <string name="group_retained">已保留可用節點：
+\n%s</string>
     <string name="group_deleted">刪除：
 \n%s</string>
     <!-- misc -->
@@ -787,4 +789,6 @@
     <string name="dashboard_log_pause">暫停日誌</string>
     <string name="dashboard_log_resume">繼續日誌</string>
     <string name="dashboard_log_clear">清空日誌</string>
+    <string name="retain_valid_nodes">保留可用節點</string>
+    <string name="retain_valid_nodes_sum">當訂閱不再列出上次測試成功的節點時，仍保留它們。</string>
 </resources>

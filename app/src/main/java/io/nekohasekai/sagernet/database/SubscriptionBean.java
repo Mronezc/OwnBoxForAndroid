@@ -20,6 +20,7 @@ public class SubscriptionBean extends Serializable {
     public Boolean updateWhenConnectedOnly;
     public String customUserAgent;
     public Boolean lockUserAgent;
+    public Boolean retainValidNodes;
     public Boolean autoUpdate;
     public Integer autoUpdateDelay;
     public Integer lastUpdated;
@@ -48,7 +49,7 @@ public class SubscriptionBean extends Serializable {
 
     @Override
     public void serializeToBuffer(ByteBufferOutput output) {
-        output.writeInt(4);
+        output.writeInt(5);
 
         output.writeInt(type);
 
@@ -73,6 +74,9 @@ public class SubscriptionBean extends Serializable {
 
         // v4
         output.writeBoolean(lockUserAgent != null && lockUserAgent);
+
+        // v5
+        output.writeBoolean(retainValidNodes != null && retainValidNodes);
     }
 
     public void serializeForShare(ByteBufferOutput output) {
@@ -118,6 +122,12 @@ public class SubscriptionBean extends Serializable {
         } else {
             lockUserAgent = false;
         }
+
+        if (version >= 5) {
+            retainValidNodes = input.readBoolean();
+        } else {
+            retainValidNodes = false;
+        }
     }
 
     public void deserializeFromShare(ByteBufferInput input) {
@@ -141,6 +151,7 @@ public class SubscriptionBean extends Serializable {
         if (updateWhenConnectedOnly == null) updateWhenConnectedOnly = false;
         if (customUserAgent == null) customUserAgent = "";
         if (lockUserAgent == null) lockUserAgent = false;
+        if (retainValidNodes == null) retainValidNodes = false;
         if (autoUpdate == null) autoUpdate = false;
         if (autoUpdateDelay == null) autoUpdateDelay = 1440;
         if (lastUpdated == null) lastUpdated = 0;

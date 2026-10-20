@@ -72,6 +72,7 @@ class GroupSettingsActivity(
         DataStore.subscriptionUpdateWhenConnectedOnly = subscription.updateWhenConnectedOnly
         DataStore.subscriptionUserAgent = subscription.customUserAgent
         DataStore.subscriptionLockUserAgent = subscription.lockUserAgent ?: false
+        DataStore.subscriptionRetainValidNodes = subscription.retainValidNodes ?: false
         DataStore.subscriptionAutoUpdate = subscription.autoUpdate
         DataStore.subscriptionAutoUpdateDelay = subscription.autoUpdateDelay
         DataStore.subscriptionFilterMode = subscription.filterMode
@@ -126,6 +127,7 @@ class GroupSettingsActivity(
                 updateWhenConnectedOnly = DataStore.subscriptionUpdateWhenConnectedOnly
                 customUserAgent = DataStore.subscriptionUserAgent
                 lockUserAgent = DataStore.subscriptionLockUserAgent
+                retainValidNodes = DataStore.subscriptionRetainValidNodes
                 autoUpdate = DataStore.subscriptionAutoUpdate
                 autoUpdateDelay = DataStore.subscriptionAutoUpdateDelay
                 filterMode = DataStore.subscriptionFilterMode

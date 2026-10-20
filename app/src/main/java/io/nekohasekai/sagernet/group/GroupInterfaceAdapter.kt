@@ -33,9 +33,10 @@ class GroupInterfaceAdapter(val context: ThemedActivity) : GroupManager.Interfac
         updated: Map<String, String>,
         deleted: List<String>,
         duplicate: List<String>,
-        byUser: Boolean
+        byUser: Boolean,
+        retained: List<String>
     ) {
-        if (changed == 0 && duplicate.isEmpty()) {
+        if (changed == 0 && duplicate.isEmpty() && retained.isEmpty()) {
             if (byUser) context.snackbar(
                     context.getString(
                             R.string.group_no_difference, group.displayName()
@@ -55,6 +56,11 @@ class GroupInterfaceAdapter(val context: ThemedActivity) : GroupManager.Interfac
                         updated.map { it }.joinToString("\n", postfix = "\n\n") {
                             if (it.key == it.value) it.key else "${it.key} => ${it.value}"
                         })
+            }
+            if (retained.isNotEmpty()) {
+                status += context.getString(
+                        R.string.group_retained, retained.joinToString("\n", postfix = "\n\n")
+                )
             }
             if (deleted.isNotEmpty()) {
                 status += context.getString(
