@@ -791,4 +791,29 @@
     <string name="dashboard_log_clear">清空日誌</string>
     <string name="retain_valid_nodes">保留可用節點</string>
     <string name="retain_valid_nodes_sum">當訂閱不再列出上次測試成功的節點時，仍保留它們。</string>
+
+    <!-- Network Diagnostics & Egress IP Details -->
+    <string name="landing_ip_risk_level">安全風控評估</string>
+    <string name="landing_ip_network_type">網路類型</string>
+    <string name="landing_ip_threat_tags">特徵標籤</string>
+    <string name="landing_ip_source">資訊來源</string>
+    <string name="landing_ip_org">組織機構</string>
+    <string name="menu_diagnostics">網路診斷</string>
+    <string name="diagnostics_title">網路診斷中心</string>
+    <string name="diagnostics_retest_all">全部重測</string>
+    <string name="diagnostics_retest">重新測試</string>
+    <string name="diagnostics_ip_overview">當前出口 IP 概覽</string>
+    <string name="diagnostics_view_ip_details">檢視完整詳情</string>
+    <string name="diagnostics_refresh_ip">重新整理 IP</string>
+    <string name="diagnostics_services_title">服務狀態檢測</string>
+    <string name="diagnostics_category_all">全部</string>
+    <string name="diagnostics_category_ai">AI 工具</string>
+    <string name="diagnostics_category_streaming">串流媒體</string>
+    <string name="diagnostics_category_common">常用服務</string>
+    <string name="diagnostics_state_available">正常可用</string>
+    <string name="diagnostics_state_restricted">地區受限</string>
+    <string name="diagnostics_state_unavailable">不可用</string>
+    <string name="diagnostics_state_testing">檢測中...</string>
+    <string name="diagnostics_not_connected">未連接代理節點，請先啟動連接</string>
+
 </resources>

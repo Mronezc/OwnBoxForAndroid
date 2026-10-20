@@ -498,6 +498,7 @@ class MainActivity : ThemedActivity(),
             R.id.nav_route -> current is RouteFragment
             R.id.nav_settings -> current is SettingsFragment
             R.id.nav_dashboard -> current is WebviewFragment
+            R.id.nav_diagnostics -> current is DiagnosticsFragment
             R.id.nav_tools -> current is ToolsFragment
             R.id.nav_logcat -> current is LogcatFragment
             R.id.nav_docs -> current is DocsFragment
@@ -591,6 +592,7 @@ class MainActivity : ThemedActivity(),
             R.id.nav_route -> displayFragment(RouteFragment())
             R.id.nav_settings -> displayFragment(SettingsFragment())
             R.id.nav_dashboard -> displayFragment(WebviewFragment())
+            R.id.nav_diagnostics -> displayFragment(DiagnosticsFragment())
             R.id.nav_tools -> displayFragment(ToolsFragment())
             R.id.nav_logcat -> displayFragment(LogcatFragment())
             R.id.nav_faq -> {

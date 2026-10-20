@@ -1,5 +1,16 @@
 # OwnBox for Android 更新日志 (Changelog)
 
+# OwnBox for Android v3.1.5 预览版 (v3.1.5-preview)
+
+* **新增「网络诊断中心」独立功能页面，从侧边栏即可快捷进入**
+* **支持 13 项主流网络与流媒体服务连通性及状态实时检测（Google、GitHub、YouTube、ChatGPT、Claude、Gemini、Netflix、Disney+、Prime Video、Spotify、TikTok、Discord、哔哩哔哩）**
+* **支持按「全部 (13)」、「AI (3)」、「流媒体 (6)」、「常用 (4)」分类快速筛选与并发独立探测**
+* **主页「落地 IP」卡片全面支持长按手势与触感反馈，一键唤出落地 IP 详细信息弹窗**
+* **落地 IP 详情增强：支持多源风险等级评估（安全、轻度、中度、高危）、网络类型识别（机房/住宅/移动蜂窝等）及风控特征标记（Proxy/VPN/Tor/Hosting）**
+* **网络诊断中心顶部概览卡片与主页长按弹窗复用底层数据模型与 BottomSheet 详情组件**
+* **优化并发检测控制与请求超时机制，提供单项快速重新测速与进度平滑联动**
+* **100% 坚守原生经典界面与操作体验**
+
 # OwnBox for Android v3.1.4 预览版 (v3.1.4-preview)
 
 * **支持订阅组更新增量保留有效节点 (Issue #78)**

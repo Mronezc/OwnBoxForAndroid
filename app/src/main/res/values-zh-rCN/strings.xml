@@ -1079,4 +1079,29 @@
     <string name="rr_save_error">规则保存失败，编辑内容仍保留。</string>
     <string name="rr_reload_error">规则已保存，但运行中的服务重载失败，请重新连接。</string>
 
+
+    <!-- Network Diagnostics & Egress IP Details -->
+    <string name="landing_ip_risk_level">安全风控评估</string>
+    <string name="landing_ip_network_type">网络类型</string>
+    <string name="landing_ip_threat_tags">特征标签</string>
+    <string name="landing_ip_source">信息来源</string>
+    <string name="landing_ip_org">组织机构</string>
+    <string name="menu_diagnostics">网络诊断</string>
+    <string name="diagnostics_title">网络诊断中心</string>
+    <string name="diagnostics_retest_all">全部重测</string>
+    <string name="diagnostics_retest">重新测试</string>
+    <string name="diagnostics_ip_overview">当前出口 IP 概览</string>
+    <string name="diagnostics_view_ip_details">查看完整详情</string>
+    <string name="diagnostics_refresh_ip">刷新 IP</string>
+    <string name="diagnostics_services_title">服务状态检测</string>
+    <string name="diagnostics_category_all">全部</string>
+    <string name="diagnostics_category_ai">AI 工具</string>
+    <string name="diagnostics_category_streaming">流媒体</string>
+    <string name="diagnostics_category_common">常用服务</string>
+    <string name="diagnostics_state_available">正常可用</string>
+    <string name="diagnostics_state_restricted">地区受限</string>
+    <string name="diagnostics_state_unavailable">不可用</string>
+    <string name="diagnostics_state_testing">检测中...</string>
+    <string name="diagnostics_not_connected">未连接代理节点，请先启动连接</string>
+
 </resources>

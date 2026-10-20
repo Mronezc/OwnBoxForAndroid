@@ -27,13 +27,17 @@
         android:id="@+id/misc"
         android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_logcat"
-            android:icon="@drawable/ic_baseline_bug_report_24"
-            android:title="@string/menu_log" />
+            android:id="@+id/nav_diagnostics"
+            android:icon="@drawable/ic_baseline_health_and_safety_24"
+            android:title="@string/menu_diagnostics" />
         <item
             android:id="@+id/nav_tools"
             android:icon="@drawable/baseline_construction_24"
             android:title="@string/menu_tools" />
+        <item
+            android:id="@+id/nav_logcat"
+            android:icon="@drawable/ic_baseline_bug_report_24"
+            android:title="@string/menu_log" />
         <item
             android:id="@+id/nav_dashboard"
             android:icon="@drawable/ic_dashboard"

@@ -1162,4 +1162,29 @@
     <string name="rr_save_error">The rule could not be saved. Your edits remain available.</string>
     <string name="rr_reload_error">Rule saved, but the running service could not reload. Reconnect the service.</string>
 
+
+    <!-- Network Diagnostics & Egress IP Details -->
+    <string name="landing_ip_risk_level">Security Assessment</string>
+    <string name="landing_ip_network_type">Network Type</string>
+    <string name="landing_ip_threat_tags">Threat Tags</string>
+    <string name="landing_ip_source">Data Source</string>
+    <string name="landing_ip_org">Organization</string>
+    <string name="menu_diagnostics">Network Diagnostics</string>
+    <string name="diagnostics_title">Network Diagnostics</string>
+    <string name="diagnostics_retest_all">Retest All</string>
+    <string name="diagnostics_retest">Retest</string>
+    <string name="diagnostics_ip_overview">Outbound IP Overview</string>
+    <string name="diagnostics_view_ip_details">View Full Details</string>
+    <string name="diagnostics_refresh_ip">Refresh IP</string>
+    <string name="diagnostics_services_title">Service Status Check</string>
+    <string name="diagnostics_category_all">All</string>
+    <string name="diagnostics_category_ai">AI Tools</string>
+    <string name="diagnostics_category_streaming">Streaming</string>
+    <string name="diagnostics_category_common">Common</string>
+    <string name="diagnostics_state_available">Available</string>
+    <string name="diagnostics_state_restricted">Restricted</string>
+    <string name="diagnostics_state_unavailable">Unavailable</string>
+    <string name="diagnostics_state_testing">Testing...</string>
+    <string name="diagnostics_not_connected">Proxy not connected. Please connect first.</string>
+
 </resources>

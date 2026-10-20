@@ -157,19 +157,34 @@ class StatsBar @JvmOverloads constructor(
             btnIpDetail?.setOnClickListener {
                 onIpDetailClicked()
             }
-            btnIpDetail?.setOnLongClickListener {
+            val onCardLongClick = View.OnLongClickListener { v ->
+                if (DataStore.hapticFeedback) {
+                    v.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+                }
                 val cached = LandingIpManager.getCachedInfo()
                 val activity = context as? Activity
-                if (cached != null && activity != null) {
-                    LandingIpBottomSheet.show(activity, cached) {
+                if (activity != null) {
+                    if (cached != null) {
+                        LandingIpBottomSheet.show(activity, cached) {
+                            refreshLandingIp(forceRefresh = true)
+                            retestLatencyInPlace()
+                        }
+                    } else {
                         refreshLandingIp(forceRefresh = true)
-                        retestLatencyInPlace()
                     }
-                    true
-                } else {
-                    false
                 }
+                true
             }
+
+            this.setOnLongClickListener(onCardLongClick)
+            val container = findViewById<View>(R.id.stats_content_container)
+            container?.setOnLongClickListener(onCardLongClick)
+            statusIpText.setOnLongClickListener(onCardLongClick)
+            statusText.setOnLongClickListener(onCardLongClick)
+            statusTitleText.setOnLongClickListener(onCardLongClick)
+            txText.setOnLongClickListener(onCardLongClick)
+            rxText.setOnLongClickListener(onCardLongClick)
+            btnIpDetail?.setOnLongClickListener(onCardLongClick)
             updateThemeColors()
         }
     }
