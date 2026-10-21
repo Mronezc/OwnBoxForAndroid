@@ -136,6 +136,13 @@ class ServiceDiagnosticsAdapter(
                     tvBadge.background = createBadge(Color.parseColor("#10B981"))
                     setDotColor(Color.parseColor("#10B981"))
                 }
+                ServiceTestState.RESTRICTED -> {
+                    btnRefresh.visibility = View.VISIBLE
+                    pbTesting.visibility = View.GONE
+                    tvBadge.text = "地区受限"
+                    tvBadge.background = createBadge(Color.parseColor("#F59E0B"))
+                    setDotColor(Color.parseColor("#F59E0B"))
+                }
                 ServiceTestState.UNAVAILABLE -> {
                     btnRefresh.visibility = View.VISIBLE
                     pbTesting.visibility = View.GONE

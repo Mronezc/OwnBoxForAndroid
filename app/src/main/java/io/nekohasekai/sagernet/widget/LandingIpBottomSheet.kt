@@ -52,6 +52,68 @@ object LandingIpBottomSheet {
 
         var currentInfo = initialInfo
 
+        val isNight = Theme.usingNightMode(activity)
+        val isWhite = Theme.isWhiteTheme(activity)
+
+        val cardBgColor = when {
+            isNight -> Color.parseColor("#1E1E1E")
+            isWhite -> Color.parseColor("#F5F6F8")
+            else -> null
+        }
+        val strokeColor = when {
+            isNight -> Color.parseColor("#333333")
+            isWhite -> Color.parseColor("#E0E0E0")
+            else -> null
+        }
+        val primaryTextColor = when {
+            isNight -> Color.parseColor("#F5F5F5")
+            isWhite -> Color.parseColor("#1A1A1A")
+            else -> null
+        }
+        val secondaryTextColor = when {
+            isNight -> Color.parseColor("#B0B0B0")
+            isWhite -> Color.parseColor("#5A5A5A")
+            else -> null
+        }
+
+        if (cardBgColor != null) {
+            view.findViewById<MaterialCardView>(R.id.card_basic_info)?.setCardBackgroundColor(cardBgColor)
+            view.findViewById<MaterialCardView>(R.id.card_network)?.setCardBackgroundColor(cardBgColor)
+            view.findViewById<MaterialCardView>(R.id.card_other)?.setCardBackgroundColor(cardBgColor)
+        }
+        if (strokeColor != null) {
+            view.findViewById<MaterialCardView>(R.id.card_basic_info)?.strokeColor = strokeColor
+            view.findViewById<MaterialCardView>(R.id.card_network)?.strokeColor = strokeColor
+            view.findViewById<MaterialCardView>(R.id.card_other)?.strokeColor = strokeColor
+            view.findViewById<View>(R.id.divider_basic_1)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_basic_2)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_basic_3)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_network_1)?.setBackgroundColor(strokeColor)
+            view.findViewById<View>(R.id.divider_network_2)?.setBackgroundColor(strokeColor)
+        }
+        if (primaryTextColor != null) {
+            view.findViewById<TextView>(R.id.tv_title)?.setTextColor(primaryTextColor)
+            tvType.setTextColor(primaryTextColor)
+            tvHitTag.setTextColor(primaryTextColor)
+            tvOrg.setTextColor(primaryTextColor)
+            tvAsn.setTextColor(primaryTextColor)
+            tvSource.setTextColor(primaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_hide_ip)?.setTextColor(primaryTextColor)
+        }
+        if (secondaryTextColor != null) {
+            view.findViewById<TextView>(R.id.tv_disclaimer)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_header_basic)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_header_network)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_header_other)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_ip_address)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_level)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_type)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_hit_tag)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_org)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_asn)?.setTextColor(secondaryTextColor)
+            view.findViewById<TextView>(R.id.tv_label_source)?.setTextColor(secondaryTextColor)
+        }
+
         fun bindInfo(info: LandingIpInfo) {
             currentInfo = info
             val isHidden = DataStore.hideLandingIpAddress
@@ -61,7 +123,26 @@ object LandingIpBottomSheet {
             tvHitTag.text = info.hitTag.ifBlank { "无" }
             tvOrg.text = info.org.ifBlank { activity.getString(R.string.unknown) }
             tvAsn.text = info.asn.ifBlank { activity.getString(R.string.unknown) }
-            tvSource.text = info.source.ifBlank { "ipquery.io" }
+            tvSource.text = info.source.ifBlank { "iplocate.io" }
+
+            // 对齐 FlClash 图二：等级为“优”时，IP 地址和等级显示绿色 #10B981；风险显示红色；普通显示主题色
+            when (info.levelLabel) {
+                "优" -> {
+                    val greenColor = Color.parseColor("#10B981")
+                    tvIpAddress.setTextColor(greenColor)
+                    tvLevel.setTextColor(greenColor)
+                }
+                "风险" -> {
+                    val redColor = Color.parseColor("#EF4444")
+                    tvIpAddress.setTextColor(redColor)
+                    tvLevel.setTextColor(redColor)
+                }
+                else -> {
+                    val defaultColor = primaryTextColor ?: Color.parseColor("#1A1A1A")
+                    tvIpAddress.setTextColor(defaultColor)
+                    tvLevel.setTextColor(defaultColor)
+                }
+            }
         }
 
         bindInfo(initialInfo)
@@ -121,71 +202,6 @@ object LandingIpBottomSheet {
                 btnRefresh.isEnabled = true
                 onRefresh()
             }
-        }
-
-        // Theme adjustments
-        val isNight = Theme.usingNightMode(activity)
-        val isWhite = Theme.isWhiteTheme(activity)
-
-        val cardBgColor = when {
-            isNight -> Color.parseColor("#1E1E1E")
-            isWhite -> Color.parseColor("#F5F6F8")
-            else -> null
-        }
-        val strokeColor = when {
-            isNight -> Color.parseColor("#333333")
-            isWhite -> Color.parseColor("#E0E0E0")
-            else -> null
-        }
-        val primaryTextColor = when {
-            isNight -> Color.parseColor("#F5F5F5")
-            isWhite -> Color.parseColor("#1A1A1A")
-            else -> null
-        }
-        val secondaryTextColor = when {
-            isNight -> Color.parseColor("#B0B0B0")
-            isWhite -> Color.parseColor("#5A5A5A")
-            else -> null
-        }
-
-        if (cardBgColor != null) {
-            view.findViewById<MaterialCardView>(R.id.card_basic_info)?.setCardBackgroundColor(cardBgColor)
-            view.findViewById<MaterialCardView>(R.id.card_network)?.setCardBackgroundColor(cardBgColor)
-            view.findViewById<MaterialCardView>(R.id.card_other)?.setCardBackgroundColor(cardBgColor)
-        }
-        if (strokeColor != null) {
-            view.findViewById<MaterialCardView>(R.id.card_basic_info)?.strokeColor = strokeColor
-            view.findViewById<MaterialCardView>(R.id.card_network)?.strokeColor = strokeColor
-            view.findViewById<MaterialCardView>(R.id.card_other)?.strokeColor = strokeColor
-            view.findViewById<View>(R.id.divider_basic_1)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider_basic_2)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider_basic_3)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider_network_1)?.setBackgroundColor(strokeColor)
-            view.findViewById<View>(R.id.divider_network_2)?.setBackgroundColor(strokeColor)
-        }
-        if (primaryTextColor != null) {
-            view.findViewById<TextView>(R.id.tv_title)?.setTextColor(primaryTextColor)
-            tvIpAddress.setTextColor(primaryTextColor)
-            tvLevel.setTextColor(primaryTextColor)
-            tvType.setTextColor(primaryTextColor)
-            tvHitTag.setTextColor(primaryTextColor)
-            tvOrg.setTextColor(primaryTextColor)
-            tvAsn.setTextColor(primaryTextColor)
-            tvSource.setTextColor(primaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_hide_ip)?.setTextColor(primaryTextColor)
-        }
-        if (secondaryTextColor != null) {
-            view.findViewById<TextView>(R.id.tv_disclaimer)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_header_basic)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_header_network)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_header_other)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_ip_address)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_level)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_type)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_hit_tag)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_org)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_asn)?.setTextColor(secondaryTextColor)
-            view.findViewById<TextView>(R.id.tv_label_source)?.setTextColor(secondaryTextColor)
         }
 
         dialog.show()

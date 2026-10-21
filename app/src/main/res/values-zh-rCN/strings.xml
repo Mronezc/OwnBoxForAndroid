@@ -1081,7 +1081,7 @@
 
 
     <!-- Network Diagnostics & Egress IP Details -->
-        <string name="landing_ip_disclaimer">第三方api，仅供参考</string>
+        <string name="landing_ip_disclaimer">依赖第三方api，仅供参考</string>
     <string name="landing_ip_section_basic">基础信息</string>
     <string name="landing_ip_section_network">网络</string>
     <string name="landing_ip_section_other">其他</string>
@@ -1093,11 +1093,12 @@
     <string name="landing_ip_label_source">采用来源</string>
     <string name="landing_ip_label_hide_ip">隐藏 IP</string>
     <string name="landing_ip_level_normal">普通</string>
-    <string name="landing_ip_level_good">良好</string>
+    <string name="landing_ip_level_good">优</string>
     <string name="landing_ip_level_risk">风险</string>
     <string name="landing_ip_type_datacenter">机房</string>
     <string name="landing_ip_type_residential">住宅</string>
-    <string name="landing_ip_type_cellular">移动</string>
+    <string name="landing_ip_type_cellular">移动网络</string>
+    <string name="landing_ip_type_business">商业</string>
     <string name="landing_ip_tag_none">无</string>
     <string name="menu_diagnostics">网络诊断</string>
     <string name="diagnostics_title">网络诊断</string>

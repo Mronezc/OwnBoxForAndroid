@@ -1164,7 +1164,7 @@
 
 
     <!-- Network Diagnostics & Egress IP Details -->
-        <string name="landing_ip_disclaimer">Third-party API, for reference only</string>
+        <string name="landing_ip_disclaimer">Depends on third-party APIs, for reference only</string>
     <string name="landing_ip_section_basic">Basic Info</string>
     <string name="landing_ip_section_network">Network</string>
     <string name="landing_ip_section_other">Other</string>
@@ -1180,7 +1180,8 @@
     <string name="landing_ip_level_risk">Risk</string>
     <string name="landing_ip_type_datacenter">Datacenter</string>
     <string name="landing_ip_type_residential">Residential</string>
-    <string name="landing_ip_type_cellular">Cellular</string>
+    <string name="landing_ip_type_cellular">Mobile</string>
+    <string name="landing_ip_type_business">Business</string>
     <string name="landing_ip_tag_none">None</string>
     <string name="menu_diagnostics">Network Diagnostics</string>
     <string name="diagnostics_title">Network Diagnostics</string>

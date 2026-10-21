@@ -794,7 +794,7 @@
 
     <!-- Network Diagnostics & Egress IP Details -->
     <string name="landing_ip_details_title">出站 IP</string>
-    <string name="landing_ip_disclaimer">第三方api，僅供參考</string>
+    <string name="landing_ip_disclaimer">依賴第三方api，僅供參考</string>
     <string name="landing_ip_section_basic">基礎資訊</string>
     <string name="landing_ip_section_network">網路</string>
     <string name="landing_ip_section_other">其他</string>
@@ -806,11 +806,12 @@
     <string name="landing_ip_label_source">採用來源</string>
     <string name="landing_ip_label_hide_ip">隱藏 IP</string>
     <string name="landing_ip_level_normal">普通</string>
-    <string name="landing_ip_level_good">良好</string>
+    <string name="landing_ip_level_good">優</string>
     <string name="landing_ip_level_risk">風險</string>
     <string name="landing_ip_type_datacenter">機房</string>
     <string name="landing_ip_type_residential">住宅</string>
-    <string name="landing_ip_type_cellular">行動</string>
+    <string name="landing_ip_type_cellular">行動網路</string>
+    <string name="landing_ip_type_business">商業</string>
     <string name="landing_ip_tag_none">無</string>
     <string name="menu_diagnostics">網路診斷</string>
     <string name="diagnostics_title">網路診斷</string>
