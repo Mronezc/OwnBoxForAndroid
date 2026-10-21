@@ -16,12 +16,17 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.annotation.IdRes
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.preference.PreferenceDataStore
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -80,6 +85,8 @@ class MainActivity : ThemedActivity(),
 
     lateinit var binding: LayoutMainBinding
     lateinit var navigation: NavigationView
+    private lateinit var drawerSettingsButton: View
+    private lateinit var drawerAboutButton: View
     private var currentMainFragment: ToolbarFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -110,23 +117,64 @@ class MainActivity : ThemedActivity(),
         }
         binding.fab.backgroundTintList = ColorStateList.valueOf(fabBgColor)
         binding.fab.imageTintList = ColorStateList.valueOf(Color.WHITE)
+        val drawerRoot: View
         if (themeResId !in intArrayOf(
                 R.style.Theme_SagerNet_Black
             )
         ) {
-            navigation = binding.navView
+            drawerRoot = binding.navView
+            navigation = drawerRoot.findViewById(R.id.nav_menu_view)
+            drawerSettingsButton = drawerRoot.findViewById(R.id.drawer_settings_button)
+            drawerAboutButton = drawerRoot.findViewById(R.id.drawer_about_button)
             binding.drawerLayout.removeView(binding.navViewBlack)
         } else {
-            navigation = binding.navViewBlack
+            drawerRoot = binding.navViewBlack
+            navigation = drawerRoot.findViewById(R.id.nav_menu_view_black)
+            drawerSettingsButton = drawerRoot.findViewById(R.id.drawer_settings_button_black)
+            drawerAboutButton = drawerRoot.findViewById(R.id.drawer_about_button_black)
             binding.drawerLayout.removeView(binding.navView)
         }
+        val drawerWidth = minOf(
+            (320 * resources.displayMetrics.density).toInt(),
+            resources.displayMetrics.widthPixels - (56 * resources.displayMetrics.density).toInt(),
+        )
+        drawerRoot.layoutParams = drawerRoot.layoutParams.apply { width = drawerWidth }
         navigation.setNavigationItemSelectedListener(this)
+        drawerSettingsButton.setOnClickListener {
+            if (isCurrentFragment(R.id.nav_settings)) {
+                binding.drawerLayout.closeDrawers()
+            } else {
+                displayFragmentWithId(R.id.nav_settings)
+            }
+        }
+        drawerAboutButton.setOnClickListener {
+            if (isCurrentFragment(R.id.nav_about)) {
+                binding.drawerLayout.closeDrawers()
+            } else {
+                displayFragmentWithId(R.id.nav_about)
+            }
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(drawerRoot) { view, insets ->
+            val systemBars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            view.updatePadding(top = systemBars.top, bottom = systemBars.bottom)
+            insets
+        }
+        ViewCompat.requestApplyInsets(drawerRoot)
+        attachDrawerScrollFades(
+            drawerRoot,
+            if (themeResId !in intArrayOf(R.style.Theme_SagerNet_Black)) R.id.drawer_top_fade else R.id.drawer_top_fade_black,
+            if (themeResId !in intArrayOf(R.style.Theme_SagerNet_Black)) R.id.drawer_bottom_fade else R.id.drawer_bottom_fade_black,
+        )
 
         if (savedInstanceState == null) {
             displayFragmentWithId(R.id.nav_configuration)
         } else {
             currentMainFragment =
                 supportFragmentManager.findFragmentById(R.id.fragment_holder) as? ToolbarFragment
+            drawerSettingsButton.isSelected = currentMainFragment is SettingsFragment
+            drawerAboutButton.isSelected = currentMainFragment is AboutFragment
         }
         onBackPressedDispatcher.addCallback {
             val fragment = supportFragmentManager.findFragmentById(R.id.fragment_holder) as? ToolbarFragment
@@ -520,6 +568,35 @@ class MainActivity : ThemedActivity(),
         }
         uncheckAll(menu)
         menu.findItem(id)?.isChecked = true
+        drawerSettingsButton.isSelected = id == R.id.nav_settings
+        drawerAboutButton.isSelected = id == R.id.nav_about
+    }
+
+    private fun attachDrawerScrollFades(drawerRoot: View, topFadeId: Int, bottomFadeId: Int) {
+        val topFade = drawerRoot.findViewById<View>(topFadeId)
+        val bottomFade = drawerRoot.findViewById<View>(bottomFadeId)
+        val recycler = findRecyclerView(navigation) ?: return
+
+        fun updateFades() {
+            val scrollable = recycler.computeVerticalScrollRange() > recycler.height + 1
+            topFade.visibility = if (scrollable && recycler.canScrollVertically(-1)) View.VISIBLE else View.GONE
+            bottomFade.visibility = if (scrollable && recycler.canScrollVertically(1)) View.VISIBLE else View.GONE
+        }
+
+        recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = updateFades()
+        })
+        recycler.post { updateFades() }
+    }
+
+    private fun findRecyclerView(view: View): RecyclerView? {
+        if (view is RecyclerView) return view
+        if (view is ViewGroup) {
+            for (index in 0 until view.childCount) {
+                findRecyclerView(view.getChildAt(index))?.let { return it }
+            }
+        }
+        return null
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

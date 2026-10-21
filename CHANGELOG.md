@@ -1,5 +1,11 @@
 # OwnBox for Android 更新日志 (Changelog)
 
+# OwnBox for Android v3.1.7 预览版 (v3.1.7-preview)
+
+* **全新圆润界面与 ChatGPT 风格侧边栏快捷入口**
+* **侧边栏新增固定 OwnBox 品牌栏、设置与关于按钮，并加入滚动渐隐效果**
+* **统一优化主界面菜单、弹窗与操作控件的圆角视觉**
+
 # OwnBox for Android v3.1.6 预览版 (v3.1.6-preview)
 
 * **服务状态检测全面对齐 FlClash 原生交互与视觉规范**

@@ -201,38 +201,204 @@
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <com.google.android.material.navigation.NavigationView
+    <LinearLayout
         android:id="@+id/nav_view"
-        style="@style/Widget.MaterialComponents.NavigationView"
-        app:insetForeground="@android:color/transparent"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:itemIconTint="@color/navigation_icon"
-        app:itemShapeAppearance="@style/ShapeAppearance.SagerNet.NavItem"
-        app:itemShapeFillColor="@color/nav_item_fill"
-        app:itemShapeInsetStart="8dp"
-        app:itemShapeInsetEnd="8dp"
-        app:itemShapeInsetTop="3dp"
-        app:itemShapeInsetBottom="3dp"
-        app:itemTextColor="@color/navigation_text"
-        app:menu="@menu/main_drawer_menu" />
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
 
-    <com.google.android.material.navigation.NavigationView
+        <TextView
+            android:id="@+id/drawer_brand"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:gravity="center_vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:text="OwnBox"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/nav_menu_view"
+                style="@style/Widget.MaterialComponents.NavigationView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                app:insetForeground="@android:color/transparent"
+                app:itemIconTint="@color/navigation_icon"
+                app:itemShapeAppearance="@style/ShapeAppearance.SagerNet.NavItem"
+                app:itemShapeFillColor="@color/nav_item_fill"
+                app:itemShapeInsetStart="8dp"
+                app:itemShapeInsetEnd="8dp"
+                app:itemShapeInsetTop="3dp"
+                app:itemShapeInsetBottom="3dp"
+                app:itemTextColor="@color/navigation_text"
+                app:menu="@menu/main_drawer_menu" />
+
+            <View
+                android:id="@+id/drawer_top_fade"
+                android:layout_width="match_parent"
+                android:layout_height="22dp"
+                android:layout_gravity="top"
+                android:background="@drawable/bg_drawer_top_fade"
+                android:clickable="false"
+                android:focusable="false"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/drawer_bottom_fade"
+                android:layout_width="match_parent"
+                android:layout_height="28dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/bg_drawer_bottom_fade"
+                android:clickable="false"
+                android:focusable="false"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/drawer_quick_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/drawer_settings_button"
+                style="@style/Widget.SagerNet.DrawerSettingsButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:contentDescription="@string/settings"
+                android:text="@string/settings"
+                app:icon="@drawable/ic_action_settings"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/drawer_about_button"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_drawer_about_button"
+                android:contentDescription="@string/menu_about"
+                android:padding="12dp"
+                android:src="@drawable/ic_baseline_person_24"
+                android:tooltipText="@string/menu_about"
+                app:tint="?attr/colorOnSurface" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/nav_view_black"
-        style="@style/Widget.MaterialComponents.NavigationView"
-        app:insetForeground="@android:color/transparent"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:itemIconTint="@color/navigation_icon"
-        app:itemShapeAppearance="@style/ShapeAppearance.SagerNet.NavItem"
-        app:itemShapeFillColor="@color/nav_item_fill"
-        app:itemShapeInsetStart="8dp"
-        app:itemShapeInsetEnd="8dp"
-        app:itemShapeInsetTop="3dp"
-        app:itemShapeInsetBottom="3dp"
-        app:itemTextColor="@color/navigation_text"
-        app:menu="@menu/main_drawer_menu" />
+        android:background="?attr/colorSurface"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/drawer_brand_black"
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:gravity="center_vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:text="OwnBox"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <com.google.android.material.navigation.NavigationView
+                android:id="@+id/nav_menu_view_black"
+                style="@style/Widget.MaterialComponents.NavigationView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                app:insetForeground="@android:color/transparent"
+                app:itemIconTint="@color/navigation_icon"
+                app:itemShapeAppearance="@style/ShapeAppearance.SagerNet.NavItem"
+                app:itemShapeFillColor="@color/nav_item_fill"
+                app:itemShapeInsetStart="8dp"
+                app:itemShapeInsetEnd="8dp"
+                app:itemShapeInsetTop="3dp"
+                app:itemShapeInsetBottom="3dp"
+                app:itemTextColor="@color/navigation_text"
+                app:menu="@menu/main_drawer_menu" />
+
+            <View
+                android:id="@+id/drawer_top_fade_black"
+                android:layout_width="match_parent"
+                android:layout_height="22dp"
+                android:layout_gravity="top"
+                android:background="@drawable/bg_drawer_top_fade"
+                android:clickable="false"
+                android:focusable="false"
+                android:visibility="gone" />
+
+            <View
+                android:id="@+id/drawer_bottom_fade_black"
+                android:layout_width="match_parent"
+                android:layout_height="28dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/bg_drawer_bottom_fade"
+                android:clickable="false"
+                android:focusable="false"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/drawer_quick_actions_black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="12dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/drawer_settings_button_black"
+                style="@style/Widget.SagerNet.DrawerSettingsButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:contentDescription="@string/settings"
+                android:text="@string/settings"
+                app:icon="@drawable/ic_action_settings"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/drawer_about_button_black"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/bg_drawer_about_button"
+                android:contentDescription="@string/menu_about"
+                android:padding="12dp"
+                android:src="@drawable/ic_baseline_person_24"
+                android:tooltipText="@string/menu_about"
+                app:tint="?attr/colorOnSurface" />
+        </LinearLayout>
+    </LinearLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>
