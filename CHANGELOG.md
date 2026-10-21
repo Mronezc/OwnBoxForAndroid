@@ -1,5 +1,9 @@
 # OwnBox for Android 更新日志 (Changelog)
 
+# OwnBox for Android v3.1.9 预览版 (v3.1.9-preview)
+
+* **修复侧边栏“关于”悬浮按钮进入页面后自动切换深色选中状态的问题**
+
 # OwnBox for Android v3.1.8 预览版 (v3.1.8-preview)
 
 * **重做 ChatGPT 风格侧边栏：紧凑连续菜单、设置快捷按钮、OwnBox 图标“关于”入口与滚动渐隐**

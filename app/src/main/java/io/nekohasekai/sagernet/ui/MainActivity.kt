@@ -597,7 +597,6 @@ class MainActivity : ThemedActivity(),
         menu.findItem(id)?.isChecked = true
         updateDrawerItemSelection(id)
         drawerSettingsButton.isSelected = id == R.id.nav_settings
-        drawerAboutButton.isSelected = id == R.id.nav_about
     }
 
     private fun attachDrawerScrollFades(drawerRoot: View, topFadeId: Int, bottomFadeId: Int) {
