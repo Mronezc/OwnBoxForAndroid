@@ -8,15 +8,23 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.RemoteException
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.annotation.IdRes
 import androidx.core.app.ActivityCompat
@@ -26,7 +34,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.preference.PreferenceDataStore
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
@@ -87,6 +94,8 @@ class MainActivity : ThemedActivity(),
     lateinit var navigation: NavigationView
     private lateinit var drawerSettingsButton: View
     private lateinit var drawerAboutButton: View
+    private lateinit var drawerMenuItems: LinearLayout
+    private lateinit var drawerMenuScroll: ScrollView
     private var currentMainFragment: ToolbarFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -126,12 +135,16 @@ class MainActivity : ThemedActivity(),
             navigation = drawerRoot.findViewById(R.id.nav_menu_view)
             drawerSettingsButton = drawerRoot.findViewById(R.id.drawer_settings_button)
             drawerAboutButton = drawerRoot.findViewById(R.id.drawer_about_button)
+            drawerMenuItems = drawerRoot.findViewById(R.id.drawer_menu_items)
+            drawerMenuScroll = drawerRoot.findViewById(R.id.drawer_menu_scroll)
             binding.drawerLayout.removeView(binding.navViewBlack)
         } else {
             drawerRoot = binding.navViewBlack
             navigation = drawerRoot.findViewById(R.id.nav_menu_view_black)
             drawerSettingsButton = drawerRoot.findViewById(R.id.drawer_settings_button_black)
             drawerAboutButton = drawerRoot.findViewById(R.id.drawer_about_button_black)
+            drawerMenuItems = drawerRoot.findViewById(R.id.drawer_menu_items_black)
+            drawerMenuScroll = drawerRoot.findViewById(R.id.drawer_menu_scroll_black)
             binding.drawerLayout.removeView(binding.navView)
         }
         val drawerWidth = minOf(
@@ -140,6 +153,7 @@ class MainActivity : ThemedActivity(),
         )
         drawerRoot.layoutParams = drawerRoot.layoutParams.apply { width = drawerWidth }
         navigation.setNavigationItemSelectedListener(this)
+        rebuildDrawerItems()
         drawerSettingsButton.setOnClickListener {
             if (isCurrentFragment(R.id.nav_settings)) {
                 binding.drawerLayout.closeDrawers()
@@ -173,8 +187,20 @@ class MainActivity : ThemedActivity(),
         } else {
             currentMainFragment =
                 supportFragmentManager.findFragmentById(R.id.fragment_holder) as? ToolbarFragment
-            drawerSettingsButton.isSelected = currentMainFragment is SettingsFragment
-            drawerAboutButton.isSelected = currentMainFragment is AboutFragment
+            val currentNavigationItem = when (currentMainFragment) {
+                is ConfigurationFragment -> R.id.nav_configuration
+                is GroupFragment -> R.id.nav_group
+                is RouteFragment -> R.id.nav_route
+                is SettingsFragment -> R.id.nav_settings
+                is WebviewFragment -> R.id.nav_dashboard
+                is DiagnosticsFragment -> R.id.nav_diagnostics
+                is ToolsFragment -> R.id.nav_tools
+                is LogcatFragment -> R.id.nav_logcat
+                is DocsFragment -> R.id.nav_docs
+                is AboutFragment -> R.id.nav_about
+                else -> null
+            }
+            currentNavigationItem?.let { setCheckedItem(it) }
         }
         onBackPressedDispatcher.addCallback {
             val fragment = supportFragmentManager.findFragmentById(R.id.fragment_holder) as? ToolbarFragment
@@ -360,6 +386,7 @@ class MainActivity : ThemedActivity(),
 
     fun refreshNavMenu(clashApi: Boolean) {
         navigation.menu.findItem(R.id.nav_dashboard)?.isVisible = clashApi
+        rebuildDrawerItems()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -568,6 +595,7 @@ class MainActivity : ThemedActivity(),
         }
         uncheckAll(menu)
         menu.findItem(id)?.isChecked = true
+        updateDrawerItemSelection(id)
         drawerSettingsButton.isSelected = id == R.id.nav_settings
         drawerAboutButton.isSelected = id == R.id.nav_about
     }
@@ -575,29 +603,111 @@ class MainActivity : ThemedActivity(),
     private fun attachDrawerScrollFades(drawerRoot: View, topFadeId: Int, bottomFadeId: Int) {
         val topFade = drawerRoot.findViewById<View>(topFadeId)
         val bottomFade = drawerRoot.findViewById<View>(bottomFadeId)
-        val recycler = findRecyclerView(navigation) ?: return
+        val surface = getColorAttr(R.attr.colorSurface)
+        val transparentSurface = ColorUtils.setAlphaComponent(surface, 0)
+        topFade.background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(surface, transparentSurface),
+        )
+        bottomFade.background = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(transparentSurface, surface),
+        )
 
         fun updateFades() {
-            val scrollable = recycler.computeVerticalScrollRange() > recycler.height + 1
-            topFade.visibility = if (scrollable && recycler.canScrollVertically(-1)) View.VISIBLE else View.GONE
-            bottomFade.visibility = if (scrollable && recycler.canScrollVertically(1)) View.VISIBLE else View.GONE
+            val scrollable = drawerMenuItems.height > drawerMenuScroll.height + 1
+            topFade.visibility = if (scrollable && drawerMenuScroll.canScrollVertically(-1)) View.VISIBLE else View.GONE
+            bottomFade.visibility = if (scrollable && drawerMenuScroll.canScrollVertically(1)) View.VISIBLE else View.GONE
         }
 
-        recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) = updateFades()
-        })
-        recycler.post { updateFades() }
+        drawerMenuScroll.viewTreeObserver.addOnScrollChangedListener { updateFades() }
+        drawerMenuItems.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> updateFades() }
+        drawerMenuScroll.post { updateFades() }
     }
 
-    private fun findRecyclerView(view: View): RecyclerView? {
-        if (view is RecyclerView) return view
-        if (view is ViewGroup) {
-            for (index in 0 until view.childCount) {
-                findRecyclerView(view.getChildAt(index))?.let { return it }
+    private fun rebuildDrawerItems() {
+        drawerMenuItems.removeAllViews()
+        var previousGroup: Int? = null
+        val menu = navigation.menu
+        for (index in 0 until menu.size()) {
+            val item = menu.getItem(index)
+            if (!item.isVisible) continue
+
+            if (previousGroup != null && previousGroup != item.groupId) {
+                drawerMenuItems.addView(View(this), LinearLayout.LayoutParams(1, dp(14)))
             }
+            previousGroup = item.groupId
+
+            val row = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                setPadding(dp(13), 0, dp(12), 0)
+                isClickable = true
+                isFocusable = true
+                tag = item.itemId
+                contentDescription = item.title
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+            }
+            val rowParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                dp(50),
+            ).apply {
+                marginStart = dp(13)
+                marginEnd = dp(13)
+                bottomMargin = dp(2)
+            }
+            row.background = drawerRowBackground(selected = item.isChecked)
+
+            val icon = ImageView(this).apply {
+                scaleType = ImageView.ScaleType.CENTER_INSIDE
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                val iconDrawable = item.icon?.mutate()
+                iconDrawable?.setTint(getColorAttr(R.attr.colorOnSurfaceVariant))
+                setImageDrawable(iconDrawable)
+            }
+            row.addView(icon, LinearLayout.LayoutParams(dp(24), dp(24)))
+
+            val title = TextView(this).apply {
+                text = item.title
+                textSize = 16f
+                setTextColor(getColorAttr(R.attr.colorOnSurface))
+                typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
+            }
+            row.addView(title, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginStart = dp(20)
+            })
+            row.setOnClickListener { onNavigationItemSelected(item) }
+            drawerMenuItems.addView(row, rowParams)
         }
-        return null
+        drawerMenuItems.post { drawerMenuScroll.requestLayout() }
     }
+
+    private fun updateDrawerItemSelection(selectedId: Int) {
+        for (index in 0 until drawerMenuItems.childCount) {
+            val row = drawerMenuItems.getChildAt(index) as? LinearLayout ?: continue
+            val itemId = row.tag as? Int ?: continue
+            val selected = itemId == selectedId
+            row.isSelected = selected
+            row.background = drawerRowBackground(selected)
+            (row.getChildAt(0) as? ImageView)?.drawable?.setTint(
+                getColorAttr(if (selected) R.attr.colorOnSurface else R.attr.colorOnSurfaceVariant)
+            )
+        }
+    }
+
+    private fun drawerRowBackground(selected: Boolean): RippleDrawable {
+        val fill = GradientDrawable().apply {
+            cornerRadius = dp(16).toFloat()
+            setColor(if (selected) getColorAttr(R.attr.colorSurfaceVariant) else Color.TRANSPARENT)
+        }
+        val ripple = ColorUtils.setAlphaComponent(getColorAttr(R.attr.colorOnSurface), 20)
+        return RippleDrawable(ColorStateList.valueOf(ripple), fill, null)
+    }
+
+    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         if (isCurrentFragment(item.itemId)) {
@@ -816,7 +926,7 @@ class MainActivity : ThemedActivity(),
             KeyEvent.KEYCODE_DPAD_LEFT -> {
                 if (super.onKeyDown(keyCode, event)) return true
                 binding.drawerLayout.open()
-                navigation.requestFocus()
+                drawerMenuItems.getChildAt(0)?.requestFocus()
             }
 
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
