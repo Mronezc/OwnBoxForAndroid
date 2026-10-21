@@ -3,6 +3,7 @@
 # OwnBox for Android v3.1.9 预览版 (v3.1.9-preview)
 
 * **修复侧边栏“关于”悬浮按钮进入页面后自动切换深色选中状态的问题**
+* **修复长按侧边栏“设置”按钮时出现方形阴影的问题**
 
 # OwnBox for Android v3.1.8 预览版 (v3.1.8-preview)
 
