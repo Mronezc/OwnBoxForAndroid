@@ -182,5 +182,5 @@ jobs:
             apks/*.apk
             apks/sha256sums.txt
           draft: false
-          prerelease: true
-          make_latest: false
+          prerelease: ${{ contains(env.PRE_VERSION, 'preview') || contains(env.PRE_VERSION, 'alpha') || contains(env.PRE_VERSION, 'beta') }}
+          make_latest: ${{ !(contains(env.PRE_VERSION, 'preview') || contains(env.PRE_VERSION, 'alpha') || contains(env.PRE_VERSION, 'beta')) }}
