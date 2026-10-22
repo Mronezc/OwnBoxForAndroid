@@ -457,8 +457,8 @@ class StatsBar @JvmOverloads constructor(
                         statusText.text = "${latency}ms"
                     } else {
                         statusTitleText.visibility = View.GONE
-                        if (cached == null && DataStore.showLandingIp) {
-                            statusText.text = context.getString(R.string.landing_ip_querying)
+                        if (isTestingRealLatency) {
+                            statusText.text = context.getString(R.string.connection_test_testing)
                         } else {
                             statusText.text = app.getString(R.string.vpn_connected)
                         }
@@ -487,6 +487,9 @@ class StatsBar @JvmOverloads constructor(
                 updateStatusViews()
                 if (DataStore.showLandingIp && LandingIpManager.getCachedInfo() == null) {
                     refreshLandingIp(forceRefresh = false)
+                }
+                if (lastMeasuredLatency <= 0) {
+                    testConnection(silent = true)
                 }
             }
         }
@@ -556,13 +559,13 @@ class StatsBar @JvmOverloads constructor(
                 result.onSuccess { info ->
                     btnIpDetail?.visibility = View.VISIBLE
                     updateStatusViews()
-                    if (lastMeasuredLatency <= 0) {
-                        testConnection(silent = true)
-                    }
                 }.onFailure { err ->
                     Logs.w(err)
                     btnIpDetail?.visibility = View.VISIBLE
                     updateStatusViews()
+                }
+                if (lastMeasuredLatency <= 0) {
+                    testConnection(silent = true)
                 }
             }
         }

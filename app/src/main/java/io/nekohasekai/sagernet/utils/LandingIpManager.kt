@@ -180,28 +180,8 @@ object LandingIpManager {
 
     // 第一步：快速解析真实出口 IP 地址（多源快速嗅探）
     private fun fetchRawEgressIp(ua: String): Pair<String, String>? {
-        // 1. 尝试 ident.me (JSON)
+        // 1. 优先尝试 Cloudflare Anycast trace（全球边缘节点，100ms 极速响应）
         var client: libcore.HTTPClient? = null
-        try {
-            client = createHttpClient()
-            val req = client.newRequest().apply {
-                setURL("https://ident.me/json")
-                setUserAgent(ua)
-            }
-            val resp = req.execute()
-            val body = Util.getStringBox(resp.contentString)
-            val json = JSONObject(body)
-            val ip = json.optString("ip").trim()
-            if (ip.isNotBlank()) {
-                val cc = json.optString("country_code", json.optString("cc")).uppercase()
-                return Pair(ip, cc)
-            }
-        } catch (_: Throwable) {
-        } finally {
-            runCatching { client?.close() }
-        }
-
-        // 2. 尝试 Cloudflare trace
         try {
             client = createHttpClient()
             val req = client.newRequest().apply {
@@ -225,7 +205,7 @@ object LandingIpManager {
             runCatching { client?.close() }
         }
 
-        // 3. 尝试 ip.sb
+        // 2. 备选尝试 ip.sb
         try {
             client = createHttpClient()
             val req = client.newRequest().apply {
@@ -238,6 +218,26 @@ object LandingIpManager {
             val ip = json.optString("ip").trim()
             if (ip.isNotBlank()) {
                 val cc = json.optString("country_code").uppercase()
+                return Pair(ip, cc)
+            }
+        } catch (_: Throwable) {
+        } finally {
+            runCatching { client?.close() }
+        }
+
+        // 3. 备选尝试 ident.me (JSON)
+        try {
+            client = createHttpClient()
+            val req = client.newRequest().apply {
+                setURL("https://ident.me/json")
+                setUserAgent(ua)
+            }
+            val resp = req.execute()
+            val body = Util.getStringBox(resp.contentString)
+            val json = JSONObject(body)
+            val ip = json.optString("ip").trim()
+            if (ip.isNotBlank()) {
+                val cc = json.optString("country_code", json.optString("cc")).uppercase()
                 return Pair(ip, cc)
             }
         } catch (_: Throwable) {
@@ -534,8 +534,8 @@ object LandingIpManager {
             ?: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 
         try {
-            // 第一步：先快速拿到真实出口 IP 字符串与国家
-            val ipPair = withTimeoutOrNull(2500L) { fetchRawEgressIp(ua) }
+            // 第一步：先快速拿到真实出口 IP 字符串与国家（优先 Anycast 毫秒响应）
+            val ipPair = withTimeoutOrNull(2000L) { fetchRawEgressIp(ua) }
             val rawIp = ipPair?.first.orEmpty()
             val rawCc = ipPair?.second.orEmpty()
 
@@ -543,17 +543,17 @@ object LandingIpManager {
                 return@withContext Result.failure(Exception("无法连接或获取出口 IP"))
             }
 
-            // 第二步：使用真实 IP 执行多梯队质量查询（优先 iplocate.io 对齐图二）
-            var info = withTimeoutOrNull(3000L) { fetchFromIpLocate(rawIp, rawCc, ua, startTime) }
+            // 第二步：使用真实 IP 执行多梯队质量查询（优先 iplocate.io 对齐 FlClash，超时快速切入 ip-api.com）
+            var info = withTimeoutOrNull(1200L) { fetchFromIpLocate(rawIp, rawCc, ua, startTime) }
 
-            // 备用第二梯队：ip-api.com
+            // 备用第二梯队：ip-api.com（毫秒级极速通道）
             if (info == null) {
-                info = withTimeoutOrNull(2500L) { fetchFromIpApiCom(rawIp, rawCc, ua, startTime) }
+                info = withTimeoutOrNull(1500L) { fetchFromIpApiCom(rawIp, rawCc, ua, startTime) }
             }
 
             // 备用第三梯队：api.ipquery.io
             if (info == null) {
-                info = withTimeoutOrNull(2500L) { fetchFromIpQueryIo(rawIp, rawCc, ua, startTime) }
+                info = withTimeoutOrNull(1500L) { fetchFromIpQueryIo(rawIp, rawCc, ua, startTime) }
             }
 
             // 终极保护：如果所有第三方智库均因网络受阻，绝不硬编码假数据（如 Cloudflare, Inc.），仅返回已知真实 IP

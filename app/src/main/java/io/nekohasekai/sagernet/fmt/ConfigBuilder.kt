@@ -131,6 +131,8 @@ internal fun buildSelectorOutbound(defaultTag: String?, memberTags: List<String>
         // Endpoint tags are valid outbound references in sing-box 1.13; keep them as direct
         // group members instead of wrapping WireGuard in a removed outbound.
         outbounds = memberTags
+        // 确保手动/策略组切换时不掐断存量连接
+        interrupt_exist_connections = false
     }
 
 internal fun buildLoadBalanceOutbound(
@@ -147,7 +149,8 @@ internal fun buildLoadBalanceOutbound(
         type = "loadbalance"
         tag = customTag?.takeIf { it.isNotBlank() } ?: TAG_PROXY
         outbounds = memberTags
-        this.strategy = strategy ?: "round_robin"
+        // 默认一致性哈希，避免轮询引发出口 IP 突变断流
+        this.strategy = strategy ?: "consistent_hash"
         url = testUrl?.takeIf { it.isNotBlank() }
             ?: runCatching { DataStore.connectionTestURL }.getOrNull()?.takeIf { it.isNotBlank() }
             ?: "https://cp.cloudflare.com/generate_204"
@@ -1242,7 +1245,7 @@ fun buildConfig(
 
         // build outbounds
         if (buildSelector || useAutoSelect || useLoadBalance) {
-            val list = if (group != null && group.id != 0L) {
+            val rawList = if (group != null && group.id != 0L) {
                 SagerDatabase.proxyDao.getByGroup(group.id)
             } else {
                 val all = SagerDatabase.proxyDao.getAll()
@@ -1250,6 +1253,19 @@ fun buildConfig(
             }.filter { entity ->
                 !DataStore.isGroupDisabled(entity.groupId)
             }.ifEmpty { listOf(proxy) }
+
+            val list = if (useAutoSelect) {
+                // 解决策略组初始建立连接慢：在内核首次并发测速出结果前，
+                // sing-box 默认将 outbounds[0] 作为首发出站。
+                // 优先将此前已知有效且延迟最低的健康节点置于首位，未测试/离线节点排在后面，
+                // 确保首包绝不阻塞死等，建立连接瞬时秒开。
+                rawList.sortedWith(
+                    compareBy<ProxyEntity> { if (it.ping > 0) 0 else 1 }
+                        .thenBy { if (it.ping > 0) it.ping else Int.MAX_VALUE }
+                )
+            } else {
+                rawList
+            }
 
             list.forEach {
                 tagMap[it.id] = buildChain(it.id, it)
