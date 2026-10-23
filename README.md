@@ -34,7 +34,6 @@ All packages are officially compiled and signed via GitHub Actions CI:
 | 📱 **ARMeabi-v7a** | Older 32-bit Android phones or legacy TV boxes | [📥 APK Download](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/OwnBox-3.2.0-armeabi-v7a-release.apk) | [sha256](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/sha256sums.txt) |
 | 💻 **x86_64** | 64-bit Android emulators on PC | [📥 APK Download](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/OwnBox-3.2.0-x86_64-release.apk) | [sha256](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/sha256sums.txt) |
 | 💻 **x86** | 32-bit Android emulators on PC | [📥 APK Download](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/OwnBox-3.2.0-x86-release.apk) | [sha256](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/sha256sums.txt) |
-| 🌐 **Universal** | All-in-one universal package (larger file size, all devices) | [📥 APK Download](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/OwnBox-3.2.0-universal-release.apk) | [sha256](https://github.com/Own716/OwnBoxForAndroid/releases/download/v3.2.0/sha256sums.txt) |
 
 👉 **[View All Historical Releases](https://github.com/Own716/OwnBoxForAndroid/releases)**
 
@@ -45,7 +44,6 @@ All packages are officially compiled and signed via GitHub Actions CI:
 * **ARM64 (v8a)**: Suitable for the vast majority of modern Android phones and tablets; smaller package size and optimal performance.
 * **ARMeabi-v7a**: Suitable for older 32-bit devices or legacy Android TV devices.
 * **x86_64 / x86**: Suitable for Android emulators on Windows, macOS, or Linux.
-* **Universal**: Automatically detects device architecture. Recommended if you are unsure of your device's CPU architecture.
 
 ---
 
