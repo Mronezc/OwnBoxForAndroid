@@ -22,8 +22,6 @@
 
 **OwnBox for Android** is a universal network proxy and network diagnostics client for Android, deeply customized on top of the official native **sing-box** core. It brings together full-protocol-stack support, customizable home screen icons with system light/dark auto-adaptation, lightning-fast real-connection TCP Ping latency testing, per-app routing presets, standalone latency testing per node, concurrent dialing, dual-network acceleration, WebDAV cloud backup and sync, and Quick Settings tiles.
 
-The latest **v3.2.0 Official Release** introduces instant connection establishment, 50ms tolerance hysteresis with consistent hashing load balancing to prevent disconnections, 300ms ultra-fast Anycast egress IP detection, a dedicated Network Diagnostics Center (supporting real-time connectivity tests across 13 major AI and streaming services), a modern compact navigation drawer with rounded visual controls, and incremental active-node retention for subscriptions — delivering robust network throughput alongside an elegant, low-power user experience.
-
 ---
 
 ## 📥 Downloads (v3.2.0)
