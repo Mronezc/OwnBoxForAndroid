@@ -1123,6 +1123,9 @@ public class SingBoxOptions {
         public String default_network_strategy;
 
         public String default_domain_resolver;
+
+        // sing-box 1.11+ / RFC 8305 并发拨号回退间隔（毫秒/时间字符串，如 "100ms"）
+        public String default_fallback_delay;
     }
 
 

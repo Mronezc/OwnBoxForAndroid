@@ -1,8 +1,3 @@
-# OwnBox for Android v3.2.1 预览版 (v3.2.1-preview)
+# OwnBox for Android v3.2.2 预览版 (v3.2.2-preview)
 
-* **升级官方最新内核 sing-box v1.15.0-alpha.13**：跟进官方最新内核基线，适配底层网络协议栈与错峰建连优化
-* **自研纯 Go 原生 TUN 栈与极低功耗优化**：全面启用官方全新轻量级纯 Go TUN 协议栈，彻底剔除沉重的 gVisor 依赖，大幅缩减常驻内存占用与 GC 停顿，显著优化后台及息屏待机功耗
-* **并发拨号错峰启动优化 (Staggered Dial)**：重构双栈与并行建连调度，支持按延迟容差阶梯式错峰发起连接握手，彻底避免瞬时网络冲撞与丢包
-* **Android 专项自动重定向与分应用路由修复**：完善 Android auto-redirect 路由支持；修复 Java 双栈 AF_INET6 套接字连接所有者查找缺陷，显著提升 Android 分应用规则匹配精度
-* **转发 NAT 与 UDP 分片传输重构**：全面增强 Forward NAT 映射能力，引入 UDP 数据包分片支持，提升在线对战与低延迟音视频流稳定性
-* **网络与协议安全特性增强**：修复 AnyTLS UDP 分包拆分缺陷；引入 TLS 证书完整 SHA-256 指纹 Pinning 固定；新增扩展路由与 DNS 规则匹配项
+* **并发建连延迟极速优化 (RFC 8305 Happy Eyeballs)**：针对 sing-box v1.15.0-alpha.13 引入的 `Stagger connection attempts in parallel dial` 错峰拨号机制，将全局路由与出站回退延迟（`default_fallback_delay` / `fallback_delay`）调优至推荐标准值 `100ms`（上游默认 300ms）。彻底消除多 IP / 双栈环境下候选 IP 间 300ms~900ms 累积阶梯等待，大幅加快首包握手、冷启动与节点建连响应速度。

@@ -796,6 +796,9 @@ fun buildConfig(
             // 默认域名解析器强制走直连物理 DNS，彻底消除出站节点服务器域名在内核启动与规则集拉取时的循环死锁
             default_domain_resolver = "dns-direct"
 
+            // 优化 Happy Eyeballs 并发拨号回退延迟（RFC 8305 推荐 100ms，消除上游默认 300ms 累积等待导致的建连迟钝）
+            default_fallback_delay = "100ms"
+
             // 双网络加速与并发拨号策略
             // hybrid: 在所有可用接口并发传输；fallback: 并发快速容灾拨号（Happy Eyeballs）
             if (DataStore.dualNetworkAcceleration) {
@@ -1177,6 +1180,7 @@ fun buildConfig(
                     // 测速配置必须与正式连接一致（对齐 husi）：沿用统一的服务器
                     // 域名解析策略。曾强制空——测速解析出的 IP/协议族与真实路径不同。
                     _hack_config_map["domain_strategy"] = defaultServerDomainStrategy
+                    _hack_config_map["fallback_delay"] = "100ms"
 
                     _hack_config_map["tag"] = tagOut
                     _hack_config_map["tcp_multi_path"] = false
