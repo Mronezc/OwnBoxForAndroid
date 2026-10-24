@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
+import io.nekohasekai.sagernet.AppIconManager
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.ktx.getColorAttr
@@ -110,6 +111,9 @@ abstract class ThemedActivity : AppCompatActivity {
 
     override fun onResume() {
         super.onResume()
+        if (DataStore.dynamicIconFollowSystem) {
+            AppIconManager.syncWithSystem(this)
+        }
         val currentWallpaperColor = if (DataStore.useSystemTheme) Theme.getSystemWallpaperColor(this) else null
         val currentUsingNight = Theme.usingNightMode(this)
         if (lastUseSystemTheme != DataStore.useSystemTheme ||

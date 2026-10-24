@@ -8,7 +8,9 @@ import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.os.Build
 import androidx.appcompat.content.res.AppCompatResources
+import io.nekohasekai.sagernet.database.DataStore
 import io.nekohasekai.sagernet.ktx.Logs
+import io.nekohasekai.sagernet.utils.Theme
 
 internal object AppIconStatePolicy {
     fun current(states: Map<AppIcon, Int>): AppIcon {
@@ -50,6 +52,10 @@ object AppIconManager {
 
     fun init(context: Context) {
         try {
+            if (DataStore.dynamicIconFollowSystem) {
+                syncWithSystem(context, force = false)
+                return
+            }
             val current = current(context)
             if (current == AppIcon.NEKOBOX_PLUS) {
                 val packageManager = context.packageManager
@@ -62,6 +68,27 @@ object AppIconManager {
                         PackageManager.DONT_KILL_APP,
                     )
                 }
+            }
+        } catch (e: Throwable) {
+            Logs.w(e)
+        }
+    }
+
+    fun syncWithSystem(context: Context, force: Boolean = false) {
+        try {
+            if (!DataStore.dynamicIconFollowSystem) {
+                val current = current(context)
+                if (current == AppIcon.DARK_MODE || current == AppIcon.LIGHT_MODE) {
+                    set(context, AppIcon.NEKOBOX_PLUS)
+                }
+                return
+            }
+
+            val isNight = Theme.usingNightMode(context)
+            val target = if (isNight) AppIcon.DARK_MODE else AppIcon.LIGHT_MODE
+            val current = current(context)
+            if (force || current != target) {
+                set(context, target)
             }
         } catch (e: Throwable) {
             Logs.w(e)

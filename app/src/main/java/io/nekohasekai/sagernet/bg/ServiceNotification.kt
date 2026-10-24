@@ -224,6 +224,7 @@ class ServiceNotification(
         service.registerReceiver(this, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
+            addAction(Intent.ACTION_CONFIGURATION_CHANGED)
         })
 
         runOnMainDispatcher {
@@ -264,6 +265,18 @@ class ServiceNotification(
     override fun onReceive(context: Context, intent: Intent) {
         if (service.data.state == BaseService.State.Connected) {
             listenPostSpeed = intent.action == Intent.ACTION_SCREEN_ON
+        }
+        if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
+            runOnMainDispatcher {
+                Theme.apply(app)
+                Theme.apply(service as Context)
+                updateActions()
+                useBuilder {
+                    applyLiveUpdateCapsule(it, service.data.state, lastRegion, lastDirectSpeed)
+                    it.setSmallIcon(R.drawable.ic_throne_tile)
+                }
+                update()
+            }
         }
     }
 

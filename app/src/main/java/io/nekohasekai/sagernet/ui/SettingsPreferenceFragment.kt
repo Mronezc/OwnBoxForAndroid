@@ -12,6 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.preference.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.nekohasekai.sagernet.AppIconManager
 import io.nekohasekai.sagernet.Key
 import io.nekohasekai.sagernet.R
 import io.nekohasekai.sagernet.SagerNet
@@ -103,7 +104,17 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat(), OnPreferenceDataS
             DataStore.nightTheme = mode
             Theme.currentNightMode = mode
             Theme.applyNightTheme()
+            if (DataStore.dynamicIconFollowSystem) {
+                AppIconManager.syncWithSystem(requireContext(), force = true)
+            }
             activity?.recreate()
+            true
+        }
+
+        findPreference<SwitchPreference>(Key.DYNAMIC_ICON_FOLLOW_SYSTEM)?.setOnPreferenceChangeListener { _, newValue ->
+            val enabled = newValue as Boolean
+            DataStore.dynamicIconFollowSystem = enabled
+            AppIconManager.syncWithSystem(requireContext(), force = true)
             true
         }
         val appLanguage = findPreference<SimpleMenuPreference>(Key.APP_LANGUAGE)!!

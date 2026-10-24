@@ -3,6 +3,8 @@
 # OwnBox for Android v3.2.2 预览版 (v3.2.2-preview)
 
 * **并发建连延迟极速优化 (RFC 8305 Happy Eyeballs)**：针对 sing-box v1.15.0-alpha.13 引入的 `Stagger connection attempts in parallel dial` 错峰拨号机制，将全局路由与出站回退延迟（`default_fallback_delay` / `fallback_delay`）调优至推荐标准值 `100ms`（上游默认 300ms）。彻底消除多 IP / 双栈环境下候选 IP 间 300ms~900ms 累积阶梯等待，大幅加快首包握手、冷启动与节点建连响应速度。
+* **新增「图标跟随系统深浅色」开关与老机型动态适配**：在常规设置中新增动态切换开关。开启后，在老旧 Android 系统或不支持动态主题图标的桌面上，应用与桌面图标将通过底层别名动态调度，随系统深浅色模式自动切换对应深浅色图标。
+* **通知中心深浅色动态重绘**：前台服务通知监听系统配置变更广播，切换系统夜间模式时实时重绘通知栏状态与上下文，彻底修复老系统通知图标与背景色不跟随刷新的缺陷。
 
 # OwnBox for Android v3.2.1 预览版 (v3.2.1-preview)
 
