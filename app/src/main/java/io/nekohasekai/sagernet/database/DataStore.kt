@@ -117,7 +117,7 @@ object DataStore : OnPreferenceDataStoreChangeListener {
     var appTheme by configurationStore.int(Key.APP_THEME) { Theme.LIGHT_GRAY }
     val useSystemTheme: Boolean get() = false
     var nightTheme by configurationStore.stringToInt(Key.NIGHT_THEME)
-    var dynamicIconFollowSystem by configurationStore.boolean(Key.DYNAMIC_ICON_FOLLOW_SYSTEM) { false }
+    var appIconMode by configurationStore.stringToInt(Key.APP_ICON_MODE) { 0 }
     var appLanguage by configurationStore.string(Key.APP_LANGUAGE) { "" }
     var serviceMode by configurationStore.string(Key.SERVICE_MODE) { Key.MODE_VPN }
 

@@ -432,8 +432,9 @@
         otherwise you may not be able to connect to the Internet.</string>
     <string name="lines">%d Lines</string>
     <string name="night_mode">Night Mode</string>
-    <string name="dynamic_icon_follow_system">Icon follow system dark/light theme</string>
-    <string name="dynamic_icon_follow_system_summary">Automatically switch desktop and app icons between dark and light modes according to system settings (recommended for older devices)</string>
+    <string name="app_icon_mode">App Icon Style</string>
+    <string name="app_icon_light">Light icon</string>
+    <string name="app_icon_dark">Dark icon</string>
     <string name="language">Language</string>
     <string name="follow_system">Follow System</string>
     <string name="enable">Enable</string>

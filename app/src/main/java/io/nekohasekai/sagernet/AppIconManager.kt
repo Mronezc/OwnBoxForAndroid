@@ -37,6 +37,10 @@ internal object AppIconStatePolicy {
 }
 
 object AppIconManager {
+    const val MODE_FOLLOW_SYSTEM = 0
+    const val MODE_LIGHT = 1
+    const val MODE_DARK = 2
+
     fun current(context: Context): AppIcon {
         return try {
             val packageManager = context.packageManager
@@ -51,41 +55,22 @@ object AppIconManager {
     }
 
     fun init(context: Context) {
-        try {
-            if (DataStore.dynamicIconFollowSystem) {
-                syncWithSystem(context, force = false)
-                return
-            }
-            val current = current(context)
-            if (current == AppIcon.NEKOBOX_PLUS) {
-                val packageManager = context.packageManager
-                val state = packageManager.getComponentEnabledSetting(AppIcon.NEKOBOX_PLUS.componentName(context))
-                if (state != PackageManager.COMPONENT_ENABLED_STATE_ENABLED &&
-                    state != PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
-                    packageManager.setComponentEnabledSetting(
-                        AppIcon.NEKOBOX_PLUS.componentName(context),
-                        PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                        PackageManager.DONT_KILL_APP,
-                    )
-                }
-            }
-        } catch (e: Throwable) {
-            Logs.w(e)
-        }
+        applyIconMode(context, force = false)
     }
 
-    fun syncWithSystem(context: Context, force: Boolean = false) {
+    fun applyIconMode(context: Context, mode: Int = DataStore.appIconMode, force: Boolean = false) {
         try {
-            if (!DataStore.dynamicIconFollowSystem) {
-                val current = current(context)
-                if (current == AppIcon.DARK_MODE || current == AppIcon.LIGHT_MODE) {
-                    set(context, AppIcon.NEKOBOX_PLUS)
+            val target = when (mode) {
+                MODE_LIGHT -> AppIcon.LIGHT_MODE
+                MODE_DARK -> AppIcon.DARK_MODE
+                else -> {
+                    if (Theme.usingNightMode(context)) {
+                        AppIcon.DARK_MODE
+                    } else {
+                        AppIcon.LIGHT_MODE
+                    }
                 }
-                return
             }
-
-            val isNight = Theme.usingNightMode(context)
-            val target = if (isNight) AppIcon.DARK_MODE else AppIcon.LIGHT_MODE
             val current = current(context)
             if (force || current != target) {
                 set(context, target)

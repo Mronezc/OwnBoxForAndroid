@@ -324,8 +324,9 @@
     <string name="config_settings">配置设置</string>
     <string name="custom_config">自定义配置</string>
     <string name="night_mode">夜间模式</string>
-    <string name="dynamic_icon_follow_system">图标跟随系统深浅色</string>
-    <string name="dynamic_icon_follow_system_summary">根据系统深浅色模式自动切换桌面与应用图标（适合老旧系统或桌面不兼容动态图标的机型）</string>
+    <string name="app_icon_mode">应用图标样式</string>
+    <string name="app_icon_light">浅色图标</string>
+    <string name="app_icon_dark">深色图标</string>
     <string name="language">语言</string>
     <string name="enable">启用</string>
     <string name="auto">自动</string>

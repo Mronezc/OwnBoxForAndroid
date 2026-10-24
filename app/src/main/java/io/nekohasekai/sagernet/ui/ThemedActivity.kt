@@ -111,8 +111,8 @@ abstract class ThemedActivity : AppCompatActivity {
 
     override fun onResume() {
         super.onResume()
-        if (DataStore.dynamicIconFollowSystem) {
-            AppIconManager.syncWithSystem(this)
+        if (DataStore.appIconMode == AppIconManager.MODE_FOLLOW_SYSTEM) {
+            AppIconManager.applyIconMode(this)
         }
         val currentWallpaperColor = if (DataStore.useSystemTheme) Theme.getSystemWallpaperColor(this) else null
         val currentUsingNight = Theme.usingNightMode(this)

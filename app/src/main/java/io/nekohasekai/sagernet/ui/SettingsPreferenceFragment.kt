@@ -104,17 +104,17 @@ class SettingsPreferenceFragment : PreferenceFragmentCompat(), OnPreferenceDataS
             DataStore.nightTheme = mode
             Theme.currentNightMode = mode
             Theme.applyNightTheme()
-            if (DataStore.dynamicIconFollowSystem) {
-                AppIconManager.syncWithSystem(requireContext(), force = true)
+            if (DataStore.appIconMode == AppIconManager.MODE_FOLLOW_SYSTEM) {
+                AppIconManager.applyIconMode(requireContext(), force = true)
             }
             activity?.recreate()
             true
         }
 
-        findPreference<SwitchPreference>(Key.DYNAMIC_ICON_FOLLOW_SYSTEM)?.setOnPreferenceChangeListener { _, newValue ->
-            val enabled = newValue as Boolean
-            DataStore.dynamicIconFollowSystem = enabled
-            AppIconManager.syncWithSystem(requireContext(), force = true)
+        findPreference<SimpleMenuPreference>(Key.APP_ICON_MODE)?.setOnPreferenceChangeListener { _, newMode ->
+            val mode = (newMode as String).toInt()
+            DataStore.appIconMode = mode
+            AppIconManager.applyIconMode(requireContext(), mode = mode, force = true)
             true
         }
         val appLanguage = findPreference<SimpleMenuPreference>(Key.APP_LANGUAGE)!!

@@ -148,8 +148,8 @@ class SagerNet : Application(),
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         updateNotificationChannels()
-        if (DataStore.dynamicIconFollowSystem) {
-            AppIconManager.syncWithSystem(this)
+        if (DataStore.appIconMode == AppIconManager.MODE_FOLLOW_SYSTEM) {
+            AppIconManager.applyIconMode(this)
         }
     }
 

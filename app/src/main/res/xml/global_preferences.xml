@@ -84,12 +84,14 @@
             app:title="@string/night_mode"
             app:useSimpleSummaryProvider="true" />
 
-        <SwitchPreference
-            app:defaultValue="false"
+        <moe.matsuri.nb4a.ui.SimpleMenuPreference
+            app:defaultValue="0"
+            app:entries="@array/app_icon_mode_entries"
+            app:entryValues="@array/int_array_3"
             app:icon="@drawable/ic_baseline_app_shortcut_24"
-            app:key="dynamicIconFollowSystem"
-            app:title="@string/dynamic_icon_follow_system"
-            app:summary="@string/dynamic_icon_follow_system_summary" />
+            app:key="appIconMode"
+            app:title="@string/app_icon_mode"
+            app:useSimpleSummaryProvider="true" />
 
         <moe.matsuri.nb4a.ui.SimpleMenuPreference
             app:defaultValue=""
