@@ -19,7 +19,7 @@
   </p>
 
   <p>
-    <sub>Android 5.0+ · Kotlin + Go · sing-box v1.15.0-alpha.12 · Open Source</sub>
+    <sub>Android 5.0+ · Kotlin + Go · sing-box v1.15.0-alpha.13 · Open Source</sub>
   </p>
 </div>
 
@@ -126,7 +126,7 @@
 | Android | 原生 Android 客户端，最低支持 Android 5.0（API 21） |
 | Kotlin | Android 应用主要开发语言 |
 | Go / `libcore` | 集成与适配 sing-box 核心能力 |
-| sing-box | 当前仓库配置版本为 `v1.15.0-alpha.12` |
+| sing-box | 当前仓库配置版本为 `v1.15.0-alpha.13` |
 | GitHub Actions | 自动化构建与发布流程 |
 
 ## 🔐 安全与签名说明
