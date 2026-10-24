@@ -2,9 +2,7 @@
 
 # OwnBox for Android v3.2.4 预览版 (v3.2.4-preview)
 
-* **Alpha 12 与 Alpha 13 双内核对照包同步发布**：
-  - 同步发布 `*-alpha13.apk`（官方最新 sing-box v1.15.0-alpha.13）与 `*-alpha12.apk`（官方成熟 sing-box v1.15.0-alpha.12）双版本安装包；
-  - 两个版本同签名同包名（支持无缝覆盖安装），均完整集成以下全部网络连接与 Telegram 深度优化，供用户同机对比性能与稳定性。
+* **官方最新内核基线 (sing-box v1.15.0-alpha.13)**：保持最新内核架构与原生纯 Go TUN 栈特性，全面集成以下深度网络与连接调优。
 * **彻底解决 Telegram 图片首次下载长时间缓冲与转圈**：
   - **核心媒体网段穿透直达**：在路由规则中补齐 Telegram 官方核心媒体分发 CDN 网段 `91.108.20.0/22` 及 IPv6 段，彻底跳过嗅探器（Sniffer），消除非 TLS 协议产生的 100ms~300ms 首包死等；
   - **直连 DNS 极速解析优化**：将 `default_domain_resolver` 切换为系统直连物理 UDP DNS（`dns-local`），将节点域名解析耗时由 DoH 的 150~350ms 压减至 10~20ms，杜绝冷启动串行握手延迟；
