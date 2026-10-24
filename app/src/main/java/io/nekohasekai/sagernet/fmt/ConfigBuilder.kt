@@ -793,8 +793,8 @@ fun buildConfig(
             rules = mutableListOf()
             rule_set = mutableListOf()
 
-            // 默认域名解析器强制走直连物理 DNS，彻底消除出站节点服务器域名在内核启动与规则集拉取时的循环死锁
-            default_domain_resolver = "dns-direct"
+            // 默认域名解析器强制走直连物理 DNS，彻底消除出站节点服务器域名在内核启动与规则集拉取时的循环死锁与 DoH 握手延迟
+            default_domain_resolver = "dns-local"
 
             // 优化 Happy Eyeballs 并发拨号回退延迟（RFC 8305 推荐 100ms，消除上游默认 300ms 累积等待导致的建连迟钝）
             default_fallback_delay = "100ms"
@@ -1181,6 +1181,9 @@ fun buildConfig(
                     // 域名解析策略。曾强制空——测速解析出的 IP/协议族与真实路径不同。
                     _hack_config_map["domain_strategy"] = defaultServerDomainStrategy
                     _hack_config_map["fallback_delay"] = "100ms"
+                    _hack_config_map["tcp_keep_alive"] = "45s"
+                    _hack_config_map["tcp_keep_alive_interval"] = "30s"
+                    _hack_config_map["connect_timeout"] = "5s"
 
                     _hack_config_map["tag"] = tagOut
                     _hack_config_map["tcp_multi_path"] = false
@@ -1810,14 +1813,17 @@ fun buildConfig(
                 action = "hijack-dns"
             })
 
-            // 1.5. Telegram 官方数据中心（DC 1~5）纯 IP 直连通道（跳过嗅探，直达主代理出站，杜绝 300ms 首包死等与 MTProto 读超时断流）
+            // 1.5. Telegram 官方数据中心（DC 1~5）及核心媒体 CDN 纯 IP 直连通道（跳过嗅探，直达主代理出站，杜绝 100ms~300ms 首包死等与 MTProto 读超时断流）
             val telegramDcIps = listOf(
                 "91.108.4.0/22",
                 "91.108.8.0/22",
                 "91.108.12.0/22",
                 "91.108.16.0/22",
+                "91.108.20.0/22",
                 "91.108.56.0/22",
-                "149.154.160.0/20"
+                "149.154.160.0/20",
+                "2001:b88::/32",
+                "2001:67c:4e8::/48"
             )
             topRouteRules.add(Rule_DefaultOptions().apply {
                 ip_cidr = telegramDcIps

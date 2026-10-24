@@ -74,9 +74,9 @@ class BaseService {
                             Libcore.forceGc()
                         } else {
                             proxy?.box?.wake()
-                            // Exiting Doze mode: carrier/NAT mappings are guaranteed expired.
-                            // Passive instantaneous reset to avoid 15-30s TCP zombie socket timeouts.
-                            Libcore.resetAllConnections(true)
+                            if (DataStore.wakeResetConnections) {
+                                Libcore.resetAllConnections(true)
+                            }
                         }
                     }
                 }
@@ -127,13 +127,9 @@ class BaseService {
                     runOnDefaultDispatcher {
                         proxy?.looper?.postLastSnapshotSpeed()
                     }
-                    val offDuration = if (lastScreenOffTime > 0L) {
-                        android.os.SystemClock.elapsedRealtime() - lastScreenOffTime
-                    } else 0L
-                    // 仅当息屏休眠超过 3 分钟（运营商 NAT 表老化失效导致僵尸连接）或用户显式配置时，
-                    // 在亮屏的瞬时单次执行轻量清理（耗时 < 1ms），实现 0 等待秒连；
-                    // 短息屏（< 3 分钟，如看时间）绝不打断现有连接，保护后台音乐、长上传与通话。
-                    if (offDuration > 180_000L || DataStore.wakeResetConnections) {
+                    // 短息屏与正常亮屏绝不打断现有存活连接，保护后台 Telegram 媒体流、音乐与通话；
+                    // 仅当用户显式配置 wakeResetConnections 时才主动重置。
+                    if (DataStore.wakeResetConnections) {
                         Libcore.resetAllConnections(true)
                     }
                 }
@@ -571,6 +567,11 @@ class BaseService {
         var upstreamInterfaceName: String?
 
         suspend fun preInit() {
+            try {
+                Libcore.setNetworkChangeResetConnections(DataStore.networkChangeResetConnections)
+            } catch (e: Throwable) {
+                Logs.w(e)
+            }
             if (SagerNet.underlyingNetwork == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 SagerNet.connectivity.activeNetwork?.let { active ->
                     SagerNet.underlyingNetwork = active
@@ -599,6 +600,11 @@ class BaseService {
                 val newName = link?.interfaceName
                 if (newName != null && (oldName != newName || oldNetwork != network)) {
                     Logs.d("Network changed: $oldName -> $newName (network $oldNetwork -> $network)")
+                    try {
+                        Libcore.setNetworkChangeResetConnections(DataStore.networkChangeResetConnections)
+                    } catch (e: Throwable) {
+                        Logs.w(e)
+                    }
                     upstreamInterfaceName = newName
                     NativeInterface.clearInterfaceCache()
                         if (data.state == State.Connecting) {
