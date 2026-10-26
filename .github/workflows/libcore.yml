@@ -1,0 +1,72 @@
+name: Preview Build (LibCore Only)
+
+on:
+  push:
+    branches: [ beta1-1.15, main ]
+  workflow_dispatch:          
+    inputs:
+      release_type:
+        description: '发布类型'
+        required: true
+        type: choice
+        options:
+          - preview
+          - beta
+          - alpha
+        default: 'preview'
+
+permissions:
+  contents: read
+
+jobs:
+  libcore:
+    name: Native Build (LibCore)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Golang & Libcore Status
+        run: |
+          find buildScript libcore/*.sh nb4a.properties | xargs cat | sha1sum > golang_status
+          git ls-files libcore | xargs cat | sha1sum > libcore_status
+          echo "GOLANG_STATUS=$(cat golang_status)" >> $GITHUB_ENV
+          echo "LIBCORE_STATUS=$(cat libcore_status)" >> $GITHUB_ENV
+
+      - name: LibCore Cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: app/libs/libcore.aar
+          key: libcore-${{ env.GOLANG_STATUS }}-${{ env.LIBCORE_STATUS }}
+          restore-keys: libcore-
+
+      - name: Install Golang
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ^1.25
+
+      - name: Native Build
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: ./run lib core
+
+      - name: Verify LibCore AAR
+        run: |
+          test -s app/libs/libcore.aar
+          unzip -p app/libs/libcore.aar classes.jar > /tmp/libcore-classes.jar
+          unzip -l /tmp/libcore-classes.jar | grep -q 'libcore/Libcore.class'
+          unzip -l /tmp/libcore-classes.jar | grep -q 'go/Seq.class'
+
+      - name: Upload LibCore AAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: libcore-aar
+          path: app/libs/libcore.aar
+          if-no-files-found: error
+          retention-days: 7          
+
+      - name: Create Download Link
+        if: steps.cache.outputs.cache-hit == 'true' || (steps.cache.outputs.cache-hit != 'true' && failure() != true)
+        run: |
+          echo "libcore-aar=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_ENV
